@@ -29,6 +29,8 @@ target_compile_definitions(launcher-miniz PUBLIC MINIZ_NO_ARCHIVE_WRITING_APIS _
 # {path, contents} entry compiled into the exe (src/bundled.cpp), and the
 # launcher writes them into the game's mods folder.
 file(GLOB_RECURSE LAUNCHER_BUNDLED_MODS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/mods/*")
+# Re-embed when a mod file's contents change, not only when files come or go.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${LAUNCHER_BUNDLED_MODS})
 set(bundled "")
 foreach(source IN LISTS LAUNCHER_BUNDLED_MODS)
     file(RELATIVE_PATH relative "${CMAKE_CURRENT_SOURCE_DIR}/mods" "${source}")

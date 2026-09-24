@@ -1,6 +1,13 @@
 <world>
 <entity name="xtraction_point" classname="gameent" actsound="common/game/xtraction" acttogglesanim="false" quickuse="true" model="puzzles/beacon_xtraction" nogravity="true" animstarton="true" toggleonact="false" nopickup="true" nopush="true" actonuse="true" description="Xtraction Point" actscript="extractionPoint('_OWNER_')" team="hero" actmatchteam="true" actleader="true" ignoretelekinesis="true"/>
 <entinst type="xtraction_point">
-<inst name="xtraction_point" pos="1384.2 1458.9 9.6"/>
+<inst name="xtraction_point" pos="1384.2 1458.9 9.6" orient="0 0 -1.13446"/>
+</entinst>
+<entity name="player_start" classname="playerstartent" prevzone="" prevlink="" nocollide="true"/>
+<entinst type="player_start">
+<inst name="player_start" pos="1337.69 1558.58 9.6" orient="0 0 -1.13446"/>
+<inst name="player_start" pos="1383.01 1579.71 9.6" orient="0 0 -1.13446"/>
+<inst name="player_start" pos="1292.37 1537.45 9.6" orient="0 0 -1.13446"/>
+<inst name="player_start" pos="1312.33 1612.96 9.6" orient="0 0 -1.13446"/>
 </entinst>
 </world>
