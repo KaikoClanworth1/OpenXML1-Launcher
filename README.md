@@ -6,9 +6,9 @@ Windows port of the original Xbox X-Men Legends. It has four tabs:
 - **Install:** sets the game up from your own disc image.
 - **Play:** windowed or fullscreen, and the resolution.
 - **Settings:** the PC options the game's own menus offer.
-- **Mods:** tick the mods to install, and untick to put the game back.
-  **Switched off in releases for now**, until mod installs have been tested
-  in the game. The tab is shown greyed out.
+- **Mods:** tick the mods to install, and untick to put the game back. The
+  launcher comes with its first mod, [Early X-Men Xtraction
+  Point](mods/early-xmen-xtraction), ready in the list.
 
 The launcher is separate from OpenXML1, and changes nothing in it. OpenXML1
 runs the same with or without it.
@@ -129,10 +129,15 @@ own environment. Otherwise that variable would override the chosen resolution.
 
 ## Mods
 
-**Off in releases** (`kModsEnabled` in `src/main.cpp`) until mod installs have
-been tested against real mods in the game. While it is off, the launcher reads
-nothing from, and writes nothing to, the game folder for mods. The design below
-is implemented and covered by `launcher-test`.
+**Bundled mods.** Every file under this repository's `mods/` folder is
+compiled into the launcher. When it opens a game folder, it writes each one
+into the game's `mods` folder if it is missing, or if its `mod.ini` Version
+differs from the bundled one. A mod written this way appears in the list like
+any other.
+
+**Switch.** `kModsEnabled` in `src/main.cpp` can switch the tab off for a
+release. While it is off, the launcher reads nothing from, and writes nothing
+to, the game folder for mods.
 
 The format is written for players in `mods\README.txt`, in the game folder.
 

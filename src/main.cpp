@@ -6,6 +6,7 @@
 // build.ini one key at a time, game data through the mod ledger in mods.cpp,
 // and a new install exactly as the OpenXML1 release instructions lay it out.
 #include "camera.h"
+#include "bundled.h"
 #include "game.h"
 #include "install.h"
 #include "release.h"
@@ -49,9 +50,9 @@ constexpr UINT WM_INSTALL_DONE = WM_APP + 3;      // wParam ok, lParam new std::
 constexpr UINT WM_UPDATE_CHECKED = WM_APP + 4;    // wParam manual, lParam new UpdateCheck
 constexpr UINT WM_UPDATE_DONE = WM_APP + 5;       // wParam ok, lParam new std::wstring (error)
 
-// Mods stay switched off in releases until installing them has been tested
-// against real mods in the game. The code and its tests remain in place.
-constexpr bool kModsEnabled = false;
+// Mods can be switched off for a release; installing them has been tested in
+// the game with the bundled early-xmen-xtraction mod.
+constexpr bool kModsEnabled = true;
 
 struct UpdateCheck {
     bool ok = false;
@@ -299,8 +300,16 @@ void describe_mod(int index)
     const auto& mod = g_mods[index];
     std::wstring text = mod.description.empty() ? mod.name : mod.description;
     if (!mod.problem.empty()) text = L"Cannot be installed: " + mod.problem;
-    else text += L"   (" + std::to_wstring(mod.files) + L" files, " + std::to_wstring(mod.merges) + L" merged, " +
-                 std::to_wstring(mod.appends) + L" appended)";
+    else {
+        std::wstring counts;
+        auto count = [&](unsigned n, const wchar_t* what) {
+            if (n) counts += (counts.empty() ? L"" : L", ") + std::to_wstring(n) + what;
+        };
+        count(mod.files, L" replaced");
+        count(mod.merges, L" merged");
+        count(mod.appends, L" appended");
+        if (!counts.empty()) text += L"  (files: " + counts + L")";
+    }
     SetWindowTextW(info, text.c_str());
 }
 
@@ -327,6 +336,9 @@ void load_mods()
         return;
     }
     ensure_mods_readme(g_game);
+    // Mods that ship with the launcher appear in the list like any other.
+    auto refreshed = install_bundled_mods(g_game);
+    auto previously = installed_mods(g_game);
     g_mods = find_mods(g_game);
     auto installed = installed_mods(g_game);
     HWND list = item(IDC_MOD_LIST);
@@ -348,6 +360,9 @@ void load_mods()
     g_populating = false;
     describe_mod(-1);
     mods_status();
+    for (const auto& folder : refreshed)
+        if (std::find(previously.begin(), previously.end(), folder) != previously.end())
+            status(folder + L" was updated by the launcher. Press Apply mods to install the new version.");
 }
 
 bool apply_selected_mods(bool only_if_changed)
@@ -798,8 +813,8 @@ void build()
         g.iGroupId = i + 1;
         ListView_InsertGroup(list, -1, &g);
     }
-    label(kMods, L"", 12, 236, 540, 40, IDC_MOD_INFO, SS_NOPREFIX);
-    button(kMods, L"Unlock every installed character and costume (modder mode)", 12, 282, 540, 22, IDC_MODDER, BS_AUTOCHECKBOX);
+    label(kMods, L"", 12, 234, 540, 50, IDC_MOD_INFO, SS_NOPREFIX);
+    button(kMods, L"Unlock every installed character and costume (modder mode)", 12, 288, 540, 22, IDC_MODDER, BS_AUTOCHECKBOX);
     button(kMods, L"Open mods folder", 12, 318, 130, 28, IDC_OPEN_MODS);
     button(kMods, L"Refresh", 150, 318, 90, 28, IDC_REFRESH_MODS);
     button(kMods, L"Apply mods", 422, 318, 130, 28, IDC_APPLY_MODS);

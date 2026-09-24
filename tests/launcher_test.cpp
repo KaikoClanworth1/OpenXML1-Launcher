@@ -6,6 +6,7 @@
 // --game merges and compiles a copy of that game's data/herostat.eng (the
 // folder is only read). --image reads a real disc image. --install runs the
 // whole installation into <target>, which must not exist yet.
+#include "bundled.h"
 #include "camera.h"
 #include "install.h"
 #include "mods.h"
@@ -18,6 +19,7 @@
 #include <cstdio>
 #include <fstream>
 #include <cstring>
+#include <algorithm>
 #include <map>
 
 using namespace launcher;
@@ -263,6 +265,29 @@ static void updater_test(const fs::path& scratch)
     CHECK(read(exe) == "MZ new launcher");
 }
 
+static void bundled_test(const fs::path& scratch)
+{
+    fs::path game = scratch / L"bundled-game";
+    fs::create_directories(game);
+    CHECK(!bundled_files().empty());
+    auto written = install_bundled_mods(game);
+    CHECK(written.size() == 1 && written[0] == L"early-xmen-xtraction");
+    fs::path mod = game / L"mods/early-xmen-xtraction";
+    CHECK(fs::exists(mod / L"mod.ini") && fs::exists(mod / L"append/scripts/nyc/alison/nyc1_1_1.py"));
+    CHECK(fs::exists(mod / L"merge/data/missions/alison.eng") && fs::exists(mod / L"merge/maps/nyc/alison/nyc1_1_1.eng"));
+    // The same bytes as the repository's copy, which is the one tested in the game.
+    fs::path source = fs::path(__FILE__).parent_path().parent_path() / L"mods/early-xmen-xtraction";
+    for (const wchar_t* rel : {L"mod.ini", L"merge/data/missions/alison.eng", L"append/scripts/nyc/alison/nyc1_1_1.py"}) {
+        std::string a = read(source / rel), b = read(mod / rel);
+        a.erase(std::remove(a.begin(), a.end(), '\r'), a.end());  // git may check files out with CRLF
+        CHECK(a == b);
+    }
+    CHECK(install_bundled_mods(game).empty());  // same version: left alone
+    write(mod / L"mod.ini", "[Mod]\nName = old\nVersion = 0.0\n");
+    CHECK(install_bundled_mods(game).size() == 1);  // different version: refreshed
+    CHECK(contains(read(mod / L"mod.ini"), "Early X-Men"));
+}
+
 static void sound_repair_test(const fs::path& scratch)
 {
     fs::path game = scratch / L"sounds-game";
@@ -362,6 +387,7 @@ int main(int argc, char** argv)
     install_test(scratch / L"game");
     camera_test();
     sound_repair_test(scratch);
+    bundled_test(scratch);
     updater_test(scratch);
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];

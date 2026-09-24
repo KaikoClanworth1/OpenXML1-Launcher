@@ -25,9 +25,23 @@ add_library(launcher-miniz STATIC
 target_include_directories(launcher-miniz PUBLIC "${XML1}/external/miniz")
 target_compile_definitions(launcher-miniz PUBLIC MINIZ_NO_ARCHIVE_WRITING_APIS _CRT_SECURE_NO_WARNINGS)
 
+# Mods that ship with the launcher: every file under mods/ becomes a
+# {path, contents} entry compiled into the exe (src/bundled.cpp), and the
+# launcher writes them into the game's mods folder.
+file(GLOB_RECURSE LAUNCHER_BUNDLED_MODS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/mods/*")
+set(bundled "")
+foreach(source IN LISTS LAUNCHER_BUNDLED_MODS)
+    file(RELATIVE_PATH relative "${CMAKE_CURRENT_SOURCE_DIR}/mods" "${source}")
+    file(READ "${source}" contents)
+    string(APPEND bundled "{u8\"${relative}\", R\"BUNDLEDMOD(${contents})BUNDLEDMOD\"},\n")
+endforeach()
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/bundled_mods.inc.new" "${bundled}")
+file(COPY_FILE "${CMAKE_CURRENT_BINARY_DIR}/bundled_mods.inc.new" "${CMAKE_CURRENT_BINARY_DIR}/bundled_mods.inc" ONLY_IF_DIFFERENT)
+
 add_library(launcher-core STATIC
-    src/mods.cpp src/text.cpp src/game.cpp src/xiso.cpp src/release.cpp src/install.cpp
+    src/mods.cpp src/text.cpp src/game.cpp src/xiso.cpp src/release.cpp src/install.cpp src/bundled.cpp
     "${XML1}/src/pc_controls.cpp" "${XML1}/src/xmlb.cpp")
+target_include_directories(launcher-core PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 target_compile_features(launcher-core PUBLIC cxx_std_17)
 target_compile_options(launcher-core PUBLIC /utf-8)
 target_compile_definitions(launcher-core PUBLIC UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX _CRT_SECURE_NO_WARNINGS)
