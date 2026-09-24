@@ -449,6 +449,18 @@ void use_game_folder(const fs::path& folder)
     check(IDC_MODDER, modder_mode(g_game));
     load_mods();
     status(L"Ready.");
+    if (g_capture.empty() && sounds_need_repair(g_game) && !game_running(g_game) &&
+        ask(L"This installation will play without sound.
+
+The OpenXML1 release added a sounds\eng folder that "
+            L"holds only two sound banks, and while that folder exists the game looks for every sound in it. "
+            L"Move those two banks in with the disc's sounds (sounds\zsds) so the game finds them all?",
+            MB_YESNO | MB_ICONWARNING) == IDYES) {
+        std::wstring error;
+        unsigned moved = repair_sounds(g_game, error);
+        if (!error.empty()) ask(error, MB_OK | MB_ICONERROR);
+        else status(L"Sound fixed: moved " + std::to_wstring(moved) + L" sound bank(s) into sounds\zsds.");
+    }
 }
 
 

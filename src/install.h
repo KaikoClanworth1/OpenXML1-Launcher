@@ -31,4 +31,10 @@ bool install_game(const InstallRequest& request, const InstallProgress& progress
 // A folder that already has a working install in it.
 bool has_install(const fs::path& folder);
 
+// OpenXML1 0.9b's release zip adds a sounds/eng folder with only two banks.
+// Its presence makes the game look for every sound there, so the game is
+// silent. repair_sounds folds it into sounds/zsds (see install.cpp).
+bool sounds_need_repair(const fs::path& game);
+unsigned repair_sounds(const fs::path& game, std::wstring& error);
+
 }

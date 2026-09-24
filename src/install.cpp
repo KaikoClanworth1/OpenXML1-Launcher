@@ -51,6 +51,46 @@ bool open_disc(const fs::path& image, Xiso& disc, std::wstring& error)
 
 } // namespace
 
+// OpenXML1 0.9b's zip ships sounds/eng holding only the beta Bishop and
+// Sunfire banks. The game routes every sounds/zsds/ request to sounds/<audio
+// language>/ as soon as that folder exists (src/asset_routes.c), so a partial
+// sounds/eng silences every other sound. When sounds/eng lacks banks the disc
+// has, fold it into sounds/zsds: the release's banks still replace the disc's
+// copies, exactly as the routing intended, and everything else is found.
+bool sounds_need_repair(const fs::path& game)
+{
+    const fs::path language = game / L"sounds" / L"eng", disc = game / L"sounds" / L"zsds";
+    std::error_code ec;
+    if (!fs::is_directory(language, ec) || !fs::is_directory(disc, ec)) return false;
+    // A complete language folder is a real translation; leave it alone.
+    for (auto it = fs::recursive_directory_iterator(disc, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
+        if (it->is_regular_file(ec) && !fs::exists(language / fs::relative(it->path(), disc), ec)) return true;
+    return false;
+}
+
+unsigned repair_sounds(const fs::path& game, std::wstring& error)
+{
+    const fs::path language = game / L"sounds" / L"eng", disc = game / L"sounds" / L"zsds";
+    std::error_code ec;
+    if (!sounds_need_repair(game)) return 0;
+    unsigned moved = 0;
+    std::vector<fs::path> files;
+    for (auto it = fs::recursive_directory_iterator(language, ec); !ec && it != fs::recursive_directory_iterator(); it.increment(ec))
+        if (it->is_regular_file(ec)) files.push_back(it->path());
+    for (const auto& file : files) {
+        fs::path target = disc / fs::relative(file, language);
+        fs::create_directories(target.parent_path(), ec);
+        if (!MoveFileExW(file.c_str(), target.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED)) {
+            error = L"Could not move " + file.wstring() + L" into sounds\\zsds.";
+            return moved;
+        }
+        ++moved;
+    }
+    fs::remove_all(language, ec);
+    if (fs::exists(language)) error = L"Could not remove the partial sounds\\eng folder; the game would play no sound.";
+    return moved;
+}
+
 bool has_install(const fs::path& folder) { return is_game_folder(folder); }
 
 std::wstring check_image(const fs::path& image, uint64_t* bytes_needed)
@@ -115,6 +155,9 @@ bool install_game(const InstallRequest& request, const InstallProgress& progress
     }, error);
     if (!downloaded.empty()) fs::remove(downloaded, ec);
     if (!extracted) return false;
+    progress(985, L"Arranging sound banks...");
+    repair_sounds(request.target, error);
+    if (!error.empty()) return false;
 
     // 3. Check the result has what the release instructions require.
     progress(990, L"Checking the installation...");

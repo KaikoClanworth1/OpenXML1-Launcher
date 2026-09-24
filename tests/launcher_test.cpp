@@ -202,6 +202,28 @@ static void camera_test()
     CHECK(!std::memcmp(&s, &defaults, sizeof(s)));
 }
 
+static void sound_repair_test(const fs::path& scratch)
+{
+    fs::path game = scratch / L"sounds-game";
+    write(game / L"sounds/zsds/b/i/bishop_m.zsm", "disc bishop");
+    write(game / L"sounds/zsds/m/e/menu_a.zsm", "disc menu");
+    write(game / L"sounds/eng/b/i/bishop_m.zsm", "release bishop");
+    write(game / L"sounds/eng/s/u/sun_m.zsm", "release sunfire");
+    CHECK(sounds_need_repair(game));
+    std::wstring error;
+    CHECK(repair_sounds(game, error) == 2 && error.empty());
+    CHECK(!fs::exists(game / L"sounds/eng"));  // the game stops routing to it
+    CHECK(read(game / L"sounds/zsds/b/i/bishop_m.zsm") == "release bishop");
+    CHECK(read(game / L"sounds/zsds/s/u/sun_m.zsm") == "release sunfire");
+    CHECK(read(game / L"sounds/zsds/m/e/menu_a.zsm") == "disc menu");
+    CHECK(!sounds_need_repair(game));
+    // A complete language folder is a real translation and is left alone.
+    write(game / L"sounds/eng/b/i/bishop_m.zsm", "x");
+    write(game / L"sounds/eng/m/e/menu_a.zsm", "x");
+    write(game / L"sounds/eng/s/u/sun_m.zsm", "x");
+    CHECK(!sounds_need_repair(game));
+}
+
 static void image_test(const fs::path& image)
 {
     Xiso disc;
@@ -256,6 +278,7 @@ int main(int argc, char** argv)
     merge_test();
     install_test(scratch / L"game");
     camera_test();
+    sound_repair_test(scratch);
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--game" && i + 1 < argc) real_data_test(fs::u8path(argv[++i]), scratch);
