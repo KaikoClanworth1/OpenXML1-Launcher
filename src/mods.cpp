@@ -151,9 +151,12 @@ void compile_into(const fs::path& game, const fs::path& relative, const std::str
     write_atomic(game / target, std::string(binary.begin(), binary.end()));
 }
 
+bool restore_settings(const fs::path& game, std::wstring& error);
+
 // Put back every original the ledger recorded, newest first.
 bool restore(const fs::path& game, std::wstring& error)
 {
+    if (!restore_settings(game, error)) return false;
     fs::path ledger = ledger_path(game);
     std::error_code ec;
     if (fs::exists(ledger)) {
@@ -370,6 +373,34 @@ void read_imports(const fs::path& mod, ModInfo& info)
     }
     for (const auto& [key, value] : ini.section("Copy"))
         info.game_copies.push_back({fs::u8path(key), fs::u8path(value)});
+    for (const auto& [key, value] : ini.section("Settings"))
+        info.settings.push_back({key, value});
+}
+
+fs::path settings_ledger_path(const fs::path& game) { return state_dir(game) / L"settings.txt"; }
+const char kAbsent[] = "(absent)";  // not a value any allowed key takes
+
+// Put back the build.ini keys mods set: each to its value before the first
+// mod changed it, or removed if it was not there.
+bool restore_settings(const fs::path& game, std::wstring& error)
+{
+    fs::path ledger = settings_ledger_path(game);
+    std::error_code ec;
+    if (!fs::exists(ledger, ec)) return true;
+    Ini ini;
+    if (!ini.load(game / L"build.ini")) { error = L"Could not read build.ini to undo mod settings."; return false; }
+    std::ifstream in(ledger, std::ios::binary);
+    for (std::string line; std::getline(in, line);) {
+        size_t tab = line.find('\t');
+        if (tab == std::string::npos) continue;
+        std::string key = line.substr(0, tab), previous = line.substr(tab + 1);
+        if (previous == kAbsent) ini.remove("BUILD", key);
+        else ini.set("BUILD", key, previous);
+    }
+    in.close();
+    if (!ini.save(game / L"build.ini")) { error = L"Could not write build.ini. Is the game running?"; return false; }
+    fs::remove(ledger, ec);
+    return true;
 }
 
 Plan make_plan(const fs::path& game, const std::vector<std::wstring>& enabled, std::vector<std::wstring>* skipped = nullptr)
@@ -466,6 +497,16 @@ std::string append_text(std::string text, std::string addition)
 } // namespace
 
 fs::path mods_dir(const fs::path& game) { return game / L"mods"; }
+
+bool mod_setting_allowed(const std::string& key, const std::string& value)
+{
+    // OpenXML1's switch for the main-menu Danger Room's modes, characters and arenas.
+    static const char* const kKeys[] = {"dangerRoomUnlockAll"};
+    std::wstring v = lower(widen(value));
+    if (v != L"1" && v != L"0" && v != L"true" && v != L"false") return false;
+    for (const char* allowed : kKeys) if (lower(widen(key)) == lower(widen(allowed))) return true;
+    return false;
+}
 
 void set_import_folder(const std::wstring& game, const fs::path& folder) { import_folders()[lower(game)] = folder; }
 fs::path import_folder(const std::wstring& game)
@@ -606,6 +647,10 @@ std::vector<ModInfo> find_mods(const fs::path& game)
             if (why.empty() && !fs::is_regular_file(game / source, ec)) why = L"the game has no " + source.wstring() + L" to copy";
             if (!why.empty()) mod.problem = L"copy " + target.wstring() + L": " + why;
         }
+        for (const auto& [key, value] : mod.settings) {
+            if (!mod.problem.empty()) break;
+            if (!mod_setting_allowed(key, value)) mod.problem = L"setting " + widen(key) + L" = " + widen(value) + L" is not one a mod may set";
+        }
         auto appends = files_under(entry.path() / L"append");
         mod.files = (unsigned)files.size();
         mod.merges = (unsigned)merges.size();
@@ -628,7 +673,7 @@ std::vector<ModInfo> find_mods(const fs::path& game)
             if (why.empty() && !fs::exists(game / relative)) why = L"the game has no such file to append to";
             if (!why.empty()) mod.problem = L"append\\" + relative.wstring() + L": " + why;
         }
-        if (mod.problem.empty() && !mod.files && !mod.merges && !mod.appends && mod.imports.empty() && mod.game_copies.empty()) mod.problem = L"has no files\\, merge\\ or append\\ folder";
+        if (mod.problem.empty() && !mod.files && !mod.merges && !mod.appends && mod.imports.empty() && mod.game_copies.empty() && mod.settings.empty()) mod.problem = L"has no files\\, merge\\ or append\\ folder";
         mods.push_back(mod);
     }
     std::sort(mods.begin(), mods.end(), [](const ModInfo& a, const ModInfo& b) { return lower(a.name) < lower(b.name); });
@@ -741,6 +786,30 @@ ApplyResult apply_mods(const fs::path& game, const std::vector<std::wstring>& en
         for (const auto& key : merged) {
             const fs::path& relative = plan.merge_targets[key];
             compile_into(game, relative, read_bytes(game / relative), ledger);
+        }
+        // build.ini keys, recording each one's value before the first change.
+        std::vector<std::pair<std::string, std::string>> settings;
+        for (const auto& folder : enabled) {
+            ModInfo info;
+            read_imports(mods_dir(game) / folder, info);
+            for (const auto& setting : info.settings) {
+                if (!mod_setting_allowed(setting.first, setting.second))
+                    throw std::runtime_error(narrow(folder) + ": setting " + setting.first + " is not one a mod may set");
+                settings.push_back(setting);
+            }
+        }
+        if (!settings.empty()) {
+            Ini ini;
+            if (!ini.load(game / L"build.ini")) throw std::runtime_error("cannot read build.ini");
+            std::string record;
+            std::set<std::wstring> seen;
+            for (const auto& [key, value] : settings) {
+                if (seen.insert(lower(widen(key))).second)
+                    record += key + "\t" + (ini.has("BUILD", key) ? ini.get("BUILD", key) : std::string(kAbsent)) + "\n";
+                ini.set("BUILD", key, value);
+            }
+            write_atomic(settings_ledger_path(game), record);
+            if (!ini.save(game / L"build.ini")) throw std::runtime_error("cannot write build.ini (is the game running?)");
         }
         std::string list;
         for (const auto& folder : enabled) list += narrow(folder) + "\n";

@@ -19,6 +19,7 @@ public:
     std::string get(const std::string& section, const std::string& key) const;
     bool has(const std::string& section, const std::string& key) const;
     void set(const std::string& section, const std::string& key, const std::string& value);
+    void remove(const std::string& section, const std::string& key);  // the key's line; comments stay
     bool save(const std::filesystem::path& path) const;  // atomic replace
     // Every key = value line of a section, in file order.
     std::vector<std::pair<std::string, std::string>> section(const std::string& name) const;

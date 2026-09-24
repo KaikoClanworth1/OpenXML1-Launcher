@@ -136,6 +136,12 @@ void Ini::set(const std::string& section, const std::string& key, const std::str
     lines_.push_back(key + " = " + value);
 }
 
+void Ini::remove(const std::string& section, const std::string& key)
+{
+    auto found = find(section, key);
+    if (found.line >= 0) lines_.erase(lines_.begin() + found.line);
+}
+
 bool Ini::save(const std::filesystem::path& path) const
 {
     std::filesystem::path temp = path;

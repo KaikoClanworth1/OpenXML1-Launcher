@@ -193,6 +193,12 @@ imports are skipped and the rest of the mod still installs. Anything under `with
 for example an animation set to edit separately. A file of the same target under `files\` replaces the
 copy. Uninstalling removes it.
 
+**Game settings.** A `[Settings]` section sets `build.ini` `[BUILD]` keys while the mod is installed.
+Only keys the launcher allows are accepted, currently `dangerRoomUnlockAll` (1/0/true/false); any other
+key makes the mod show a problem instead of installing. Uninstalling puts each key back to its previous
+value, or removes it if it was not there.
+[`mods/danger-room-unlock-all`](mods/danger-room-unlock-all) is one such line.
+
 **Template character.** [`mods/playable-magneto`](mods/playable-magneto) adds a new
 playable hero, and its README explains every file a character needs.
 

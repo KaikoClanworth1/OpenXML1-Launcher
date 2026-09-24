@@ -34,7 +34,14 @@ struct ModInfo {
     // [Copy]: "source = target", both in this game's own folder. The copy is a
     // new file the mod owns; a file of the same target under files\ replaces it.
     std::vector<std::pair<fs::path, fs::path>> game_copies;
+    // [Settings]: build.ini [BUILD] keys the mod sets while it is installed.
+    // Only keys mod_setting_allowed() accepts; uninstalling puts back each
+    // key's previous value, or removes it if it was not there.
+    std::vector<std::pair<std::string, std::string>> settings;
 };
+
+// The build.ini keys a mod may set, with the values each accepts.
+bool mod_setting_allowed(const std::string& key, const std::string& value);
 
 // Where the player's install of another game is, by the name a mod gives it.
 // Imports from a game with no known folder are skipped.

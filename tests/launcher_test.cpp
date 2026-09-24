@@ -222,6 +222,34 @@ static void install_test(const fs::path& game)
         fs::remove(game / L"actors/boss.igb");
     }
 
+    // [Settings]: allowed build.ini keys, set while installed and put back after.
+    {
+        const std::string ini = "[BUILD]\r\nbuild = normal\r\nmodderMode = 1 ; mine\r\n\r\n[OTHER]\r\nx = 2\r\n";
+        write(game / L"build.ini", ini);
+        write(mods / L"DR/mod.ini", "[Mod]\nName = DR\n\n[Settings]\ndangerRoomUnlockAll = 1\n");
+        result = apply_mods(game, {L"DR"});
+        CHECK(result.ok && contains(read(game / L"build.ini"), "dangerRoomUnlockAll = 1\r\n"));
+        CHECK(contains(read(game / L"build.ini"), "modderMode = 1 ; mine\r\n") && contains(read(game / L"build.ini"), "[OTHER]\r\nx = 2\r\n"));
+        result = apply_mods(game, {});
+        CHECK(result.ok && read(game / L"build.ini") == ini);  // was absent: removed
+        write(game / L"build.ini", "[BUILD]\r\ndangerRoomUnlockAll = 0\r\n");
+        result = apply_mods(game, {L"DR"});
+        CHECK(result.ok && contains(read(game / L"build.ini"), "dangerRoomUnlockAll = 1"));
+        result = apply_mods(game, {});
+        CHECK(result.ok && read(game / L"build.ini") == "[BUILD]\r\ndangerRoomUnlockAll = 0\r\n");  // previous value back
+        // Only allowed keys and values.
+        write(mods / L"DR/mod.ini", "[Mod]\nName = DR\n\n[Settings]\nPreferFilesLoose = 0\n");
+        bool refused = false;
+        for (const auto& mod : find_mods(game)) if (mod.folder == L"DR") refused = !mod.problem.empty();
+        CHECK(refused);
+        write(mods / L"DR/mod.ini", "[Mod]\nName = DR\n\n[Settings]\ndangerRoomUnlockAll = yes\n");
+        refused = false;
+        for (const auto& mod : find_mods(game)) if (mod.folder == L"DR") refused = !mod.problem.empty();
+        CHECK(refused);
+        fs::remove_all(mods / L"DR");
+        fs::remove(game / L"build.ini");
+    }
+
     // [Import]: files from the player's own copy of another game.
     {
         fs::path other = game.parent_path() / L"other-game";
@@ -358,7 +386,7 @@ static void bundled_test(const fs::path& scratch)
     fs::create_directories(game);
     CHECK(!bundled_files().empty());
     auto written = install_bundled_mods(game);
-    CHECK(written.size() == 4 && std::count(written.begin(), written.end(), L"level-45") == 1 && std::count(written.begin(), written.end(), L"playable-magneto") == 1 && std::count(written.begin(), written.end(), L"early-xmen-xtraction") == 1 &&
+    CHECK(written.size() == 5 && std::count(written.begin(), written.end(), L"danger-room-unlock-all") == 1 && std::count(written.begin(), written.end(), L"level-45") == 1 && std::count(written.begin(), written.end(), L"playable-magneto") == 1 && std::count(written.begin(), written.end(), L"early-xmen-xtraction") == 1 &&
           std::count(written.begin(), written.end(), L"playable-professor-x") == 1);
     fs::path mod = game / L"mods/early-xmen-xtraction";
     CHECK(fs::exists(mod / L"mod.ini") && fs::exists(mod / L"append/scripts/nyc/alison/nyc1_1_1.py"));
