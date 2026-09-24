@@ -156,6 +156,8 @@ mods\<Mod>\append\...    text added to the end of the game's file (scripts, text
   An example is `<MISSION maxheros="4">` for `data/missions/alison.eng`.
 - A placed-object group, `<entinst type="...">`, is matched by its type, so a mod can
   replace a map's list of positions for one entity.
+- An entry with `mod-attributes="true"` sets only its attributes on the game's matching
+  entry, keeping everything inside it, for example `<stats name="ProfXAstral" playable="true" mod-attributes="true"/>`.
 - An entry with `mod-remove="true"` takes the game's matching entry out, for example
   `<REQUIREDHERO name="cyclops" mod-remove="true"/>`.
 - An English fragment also goes into the other languages the game has.

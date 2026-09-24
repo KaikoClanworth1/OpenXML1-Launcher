@@ -104,6 +104,11 @@ static void merge_test()
     CHECK(merge_xml(starts, "<world>\n<entinst type=\"player_start01\">\n<inst name=\"player_start01\" pos=\"1 2 3\"/>\n<inst name=\"player_start01\" pos=\"4 5 6\"/>\n</entinst>\n</world>\n", out, error));
     CHECK(contains(out, "pos=\"4 5 6\"") && contains(out, "pos=\"9 9 9\""));
     CHECK(out.find("pos=\"1 2 3\"") == out.rfind("pos=\"1 2 3\""));  // replaced, not added beside
+    // mod-attributes: change attributes only, keeping the entry's contents.
+    std::string heroes = "<characters>\r\n<stats name=\"ProfXAstral\" skin=\"1104\" playable=\"false\">\r\n<Talent name=\"x\"/>\r\n</stats>\r\n</characters>\r\n";
+    CHECK(merge_xml(heroes, "<characters>\n<stats name=\"profxastral\" playable=\"true\" level=\"1\" mod-attributes=\"true\"/>\n</characters>\n", out, error));
+    CHECK(out == "<characters>\r\n<stats name=\"ProfXAstral\" skin=\"1104\" playable=\"true\" level=\"1\">\r\n<Talent name=\"x\"/>\r\n</stats>\r\n</characters>\r\n");
+    CHECK(!merge_xml(heroes, "<characters>\n<stats name=\"Nobody\" playable=\"true\" mod-attributes=\"true\"/>\n</characters>\n", out, error));
     // Other elements with a type attribute (precaches) are not matched by it.
     CHECK(merge_xml("<world>\n<precache type=\"model\" filename=\"a\"/>\n</world>\n",
                     "<world>\n<precache type=\"model\" filename=\"b\"/>\n</world>\n", out, error));

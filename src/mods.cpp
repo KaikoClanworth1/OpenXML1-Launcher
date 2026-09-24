@@ -438,6 +438,26 @@ bool merge_xml(const std::string& base, const std::string& fragment, std::string
                 if (same(b.entries[i].tag, entry.tag) && same(b.entries[i].name, entry.name)) removed[i] = true;
             continue;
         }
+        // mod-attributes="true": set only the given attributes on the game's
+        // matching entry, keeping everything inside it.
+        const std::string open = text.substr(0, text.find('>') + 1);
+        if (attribute_value(open, "mod-attributes") == "true") {
+            std::vector<Attribute> changes;
+            for (const auto& attribute : attributes(open))
+                if (!same(attribute.name, "name") && !same(attribute.name, "type") && !same(attribute.name, "mod-attributes"))
+                    changes.push_back(attribute);
+            bool found = false;
+            for (size_t i = 0; i < b.entries.size(); ++i) {
+                if (!same(b.entries[i].tag, entry.tag) || !same(b.entries[i].name, entry.name)) continue;
+                std::string current = has[i] ? replaced[i] : base.substr(b.entries[i].begin, b.entries[i].end - b.entries[i].begin);
+                size_t close = current.find('>') + 1;
+                replaced[i] = with_attributes(current.substr(0, close), changes) + current.substr(close);
+                has[i] = true;
+                found = true;
+            }
+            if (!found) { error = "mod file changes <" + entry.tag + " " + entry.name + ">, which the game file does not have"; return false; }
+            continue;
+        }
         if (!entry.name.empty()) {
             for (size_t i = 0; i < b.entries.size() && !done; ++i)
                 if (same(b.entries[i].tag, entry.tag) && same(b.entries[i].name, entry.name)) {
