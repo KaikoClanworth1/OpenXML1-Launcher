@@ -1,5 +1,6 @@
 #include "release.h"
 #include "text.h"
+#include "version.h"
 #include <windows.h>
 #include <winhttp.h>
 #include <fstream>
@@ -62,16 +63,35 @@ bool get(const std::wstring& url, const std::function<bool(const char*, DWORD, u
     return true;
 }
 
-// The value of "key": "..." starting the search at `from`.
+// The value of "key": "..." starting the search at `from`, with JSON escapes
+// decoded (release notes carry \r\n, quotes and non-ASCII text).
 std::string json_string(const std::string& json, const std::string& key, size_t from, size_t* at = nullptr)
 {
     size_t k = json.find("\"" + key + "\"", from);
     if (k == std::string::npos) return {};
-    size_t open = json.find('"', json.find(':', k) + 1);
-    size_t close = json.find('"', open + 1);
-    if (open == std::string::npos || close == std::string::npos) return {};
+    size_t colon = json.find(':', k);
+    if (colon == std::string::npos) return {};
+    size_t i = colon + 1;
+    while (i < json.size() && isspace((unsigned char)json[i])) ++i;
+    if (i >= json.size() || json[i] != '"') return {};  // null, number, object
+    std::string out;
+    for (++i; i < json.size() && json[i] != '"'; ++i) {
+        char c = json[i];
+        if (c != '\\' || i + 1 >= json.size()) { out += c; continue; }
+        char e = json[++i];
+        if (e == 'n') out += '\n';
+        else if (e == 'r') out += '\r';
+        else if (e == 't') out += '\t';
+        else if (e == 'u' && i + 4 < json.size()) {
+            unsigned code = (unsigned)strtoul(json.substr(i + 1, 4).c_str(), nullptr, 16);
+            i += 4;
+            if (code < 0x80) out += (char)code;
+            else if (code < 0x800) { out += (char)(0xC0 | (code >> 6)); out += (char)(0x80 | (code & 0x3F)); }
+            else { out += (char)(0xE0 | (code >> 12)); out += (char)(0x80 | ((code >> 6) & 0x3F)); out += (char)(0x80 | (code & 0x3F)); }
+        } else out += e;  // \" \\ \/
+    }
     if (at) *at = k;
-    return json.substr(open + 1, close - open - 1);
+    return out;
 }
 
 bool safe_entry(const std::string& name)
@@ -105,6 +125,114 @@ struct Zip {
 };
 
 } // namespace
+
+bool latest_launcher(LauncherRelease& release, std::wstring& error)
+{
+    std::string json;
+    std::wstring url = L"https://api.github.com/repos/" + widen(LAUNCHER_REPOSITORY) + L"/releases/latest";
+    if (!get(url, [&](const char* data, DWORD size, uint64_t) { json.append(data, size); return json.size() < 4 * 1024 * 1024; }, error))
+        return false;
+    release.tag = widen(json_string(json, "tag_name", 0));
+    release.notes = widen(json_string(json, "body", 0));
+    release.page = widen(json_string(json, "html_url", 0));
+    for (size_t at = 0;;) {
+        size_t found = std::string::npos;
+        std::string asset = json_string(json, "browser_download_url", at, &found);
+        if (asset.empty()) break;
+        at = found + 1;
+        if (asset.size() < 4 || _stricmp(asset.c_str() + asset.size() - 4, ".exe") != 0) continue;
+        release.url = widen(asset);
+        size_t size_at = json.rfind("\"size\"", found);
+        if (size_at != std::string::npos) release.size = strtoull(json.c_str() + json.find(':', size_at) + 1, nullptr, 10);
+        break;
+    }
+    if (release.tag.empty() || release.url.empty()) {
+        error = L"The launcher's latest release has no program to download.";
+        return false;
+    }
+    return true;
+}
+
+int compare_versions(const std::wstring& a, const std::wstring& b)
+{
+    auto parts = [](const std::wstring& text) {
+        std::vector<unsigned long> out;
+        const wchar_t* p = text.c_str();
+        if (*p == L'v' || *p == L'V') ++p;
+        while (*p) {
+            wchar_t* end = nullptr;
+            out.push_back(wcstoul(p, &end, 10));
+            if (end == p) break;
+            p = end;
+            if (*p != L'.') break;
+            ++p;
+        }
+        while (out.size() < 3) out.push_back(0);
+        return out;
+    };
+    auto x = parts(a), y = parts(b);
+    for (size_t i = 0; i < x.size() && i < y.size(); ++i)
+        if (x[i] != y[i]) return x[i] < y[i] ? -1 : 1;
+    return 0;
+}
+
+bool replace_running_exe(const fs::path& exe, const fs::path& replacement, std::wstring& error)
+{
+    fs::path old = exe;
+    old += L".old";
+    std::error_code ec;
+    fs::remove(old, ec);
+    if (!MoveFileExW(exe.c_str(), old.c_str(), MOVEFILE_REPLACE_EXISTING)) {
+        error = L"Could not set the current launcher aside (error " + std::to_wstring(GetLastError()) + L").";
+        return false;
+    }
+    if (!MoveFileExW(replacement.c_str(), exe.c_str(), MOVEFILE_WRITE_THROUGH)) {
+        error = L"Could not put the new launcher in place (error " + std::to_wstring(GetLastError()) + L").";
+        MoveFileExW(old.c_str(), exe.c_str(), 0);  // put the working one back
+        return false;
+    }
+    return true;
+}
+
+void remove_previous_launcher(const fs::path& exe)
+{
+    fs::path old = exe;
+    old += L".old";
+    std::error_code ec;
+    // The previous process may still be closing; a later start removes it.
+    for (int attempt = 0; attempt < 10 && fs::exists(old, ec); ++attempt) {
+        if (fs::remove(old, ec)) break;
+        Sleep(200);
+    }
+}
+
+bool install_launcher_update(const LauncherRelease& release, const fs::path& exe, const Progress& progress, std::wstring& error)
+{
+    fs::path incoming = exe;
+    incoming += L".new";
+    if (!download(release.url, incoming, [&](uint64_t done, uint64_t total) {
+            return progress(done, total ? total : release.size);
+        }, error))
+        return false;
+    std::error_code ec;
+    // A Windows program, of the size GitHub announced, before it replaces this one.
+    char header[2] = {};
+    uint64_t size = fs::file_size(incoming, ec);
+    {
+        std::ifstream in(incoming, std::ios::binary);
+        in.read(header, 2);
+    }
+    if (ec || header[0] != 'M' || header[1] != 'Z' || (release.size && size != release.size) || size < 64 * 1024) {
+        fs::remove(incoming, ec);
+        error = L"The downloaded launcher is not a valid program; nothing was changed.";
+        return false;
+    }
+    if (!replace_running_exe(exe, incoming, error)) {
+        fs::remove(incoming, ec);
+        return false;
+    }
+    return true;
+}
 
 bool latest_release(ReleaseInfo& info, std::wstring& error)
 {

@@ -27,4 +27,23 @@ bool extract_zip(const fs::path& zip, const fs::path& target, const Progress& pr
 
 constexpr const wchar_t* kReleasesPage = L"https://github.com/GTTeancum/OpenXML1xbox/releases";
 
+// ---- the launcher's own updates --------------------------------------------
+
+struct LauncherRelease {
+    std::wstring tag, notes, url, page;
+    uint64_t size = 0;
+};
+
+// The newest release of the launcher itself (LAUNCHER_REPOSITORY).
+bool latest_launcher(LauncherRelease& release, std::wstring& error);
+// <0, 0, >0 comparing "v1.2.3"-style versions; a leading v is optional.
+int compare_versions(const std::wstring& a, const std::wstring& b);
+// Downloads the release's exe beside `exe`, checks it, and swaps it in.
+// The running exe is renamed to "<exe>.old" (Windows allows renaming, not
+// overwriting, a running program) and removed on the next start.
+bool install_launcher_update(const LauncherRelease& release, const fs::path& exe, const Progress& progress, std::wstring& error);
+// Swaps `replacement` in for the running `exe`; exposed for tests.
+bool replace_running_exe(const fs::path& exe, const fs::path& replacement, std::wstring& error);
+void remove_previous_launcher(const fs::path& exe);
+
 }

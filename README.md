@@ -7,9 +7,40 @@ Windows port of the original Xbox X-Men Legends. It has four tabs:
 - **Play:** windowed or fullscreen, and the resolution.
 - **Settings:** the PC options the game's own menus offer.
 - **Mods:** tick the mods to install, and untick to put the game back.
+  **Switched off in releases for now**, until mod installs have been tested
+  in the game. The tab is shown greyed out.
 
 The launcher is separate from OpenXML1, and changes nothing in it. OpenXML1
 runs the same with or without it.
+
+## Download and use
+
+1. Download `X-Men-Legends-Launcher.exe` from
+   [Releases](https://github.com/KaikoClanworth1/OpenXML1-Launcher/releases/latest).
+   It is a single file; no installation is needed.
+2. Put it in an empty folder where you want the game, for example
+   `D:\Games\X-Men Legends`, and open it.
+3. On the **Install** tab, choose your own X-Men Legends (World) Xbox disc
+   image, as an ISO or XISO. The launcher never includes or downloads the game.
+4. Leave "Download the latest release from GitHub" selected, or choose an
+   OpenXML1 release zip you already have. Press **Install**, then **Play**.
+
+The first time the game starts, it prepares its files with its own progress
+window. This takes a few minutes and happens once.
+
+If you already have OpenXML1 installed, put the launcher beside
+`X-Men Legends.exe` instead, or point it at that folder with **Change...** on
+the Play tab.
+
+**Sound fix for 0.9b.** The OpenXML1 0.9b release plays no sound when it is
+installed as its README describes; see
+[GTTeancum/OpenXML1xbox#6](https://github.com/GTTeancum/OpenXML1xbox/pull/6).
+The launcher fixes new installs automatically, and offers the fix when it opens
+an affected one.
+
+**Updates.** The launcher checks this repository's releases when it starts, and
+from **Check for updates** on the Play tab. Updating downloads the new exe,
+checks it, swaps it in and restarts. A running game is not affected.
 
 ## Building
 
@@ -51,7 +82,8 @@ This does the OpenXML1 release instructions for the player:
 2. **Choose the OpenXML1 release.** Either a zip you already have, or the
    latest one, fetched from GitHub's releases API. The launcher checks the zip
    holds `X-Men Legends.exe`, then extracts it over the disc's files.
-3. **Choose where to install.** The default is `%USERPROFILE%\Games\X-Men Legends`.
+3. **Choose where to install.** The default is the launcher's own folder when
+   nothing else is in it. Otherwise it is `%USERPROFILE%\Games\X-Men Legends`.
 
 Before copying, the launcher checks free space for the disc plus room to
 unpack `assetsfb.zip`. Installing over an existing install keeps saves and
@@ -97,6 +129,11 @@ own environment. Otherwise that variable would override the chosen resolution.
 
 ## Mods
 
+**Off in releases** (`kModsEnabled` in `src/main.cpp`) until mod installs have
+been tested against real mods in the game. While it is off, the launcher reads
+nothing from, and writes nothing to, the game folder for mods. The design below
+is implemented and covered by `launcher-test`.
+
 The format is written for players in `mods\README.txt`, in the game folder.
 
 ```
@@ -137,6 +174,9 @@ fragments are ignored.
 
 **`launcher-test`** covers:
 
+- the updater: version comparison, and swapping the exe of a program that is
+  still running, including putting it back when the swap fails
+- the 0.9b sound repair
 - INI editing
 - merge rules
 - a three-mod install with a conflict, switching selections, restoring byte
@@ -154,3 +194,13 @@ Optional arguments test real data:
 **`--capture <dir> --game <folder>`** makes the launcher render its own window
 to one PNG per tab. It draws off screen and never activates, so no desktop
 capture is involved.
+
+## Releasing
+
+1. Raise the version in `src/version.h`.
+2. Build Release and run `launcher-test`.
+3. Tag `vMAJOR.MINOR.PATCH` and publish a GitHub release with the exe attached
+   as `X-Men-Legends-Launcher.exe`.
+
+The updater takes the newest release's tag and its `.exe` asset, so every
+release needs exactly one `.exe` attached.

@@ -9,6 +9,7 @@
 #include "game.h"
 #include "install.h"
 #include "release.h"
+#include "version.h"
 #include "mods.h"
 #include "text.h"
 #include "pc_controls.h"
@@ -39,11 +40,24 @@ enum Id {
     IDC_MOD_LIST, IDC_MOD_INFO, IDC_MODDER, IDC_OPEN_MODS, IDC_REFRESH_MODS, IDC_APPLY_MODS,
     IDC_IMAGE, IDC_BROWSE_IMAGE, IDC_DOWNLOAD, IDC_LOCAL_ZIP, IDC_ZIP, IDC_BROWSE_ZIP, IDC_TARGET, IDC_BROWSE_TARGET,
     IDC_PROGRESS, IDC_INSTALL_STATUS, IDC_INSTALL,
+    IDC_VERSION, IDC_CHECK_UPDATES,
 };
 
 constexpr UINT WM_GAME_EXITED = WM_APP + 1;
 constexpr UINT WM_INSTALL_PROGRESS = WM_APP + 2;  // wParam permille, lParam new std::wstring
 constexpr UINT WM_INSTALL_DONE = WM_APP + 3;      // wParam ok, lParam new std::wstring (error)
+constexpr UINT WM_UPDATE_CHECKED = WM_APP + 4;    // wParam manual, lParam new UpdateCheck
+constexpr UINT WM_UPDATE_DONE = WM_APP + 5;       // wParam ok, lParam new std::wstring (error)
+
+// Mods stay switched off in releases until installing them has been tested
+// against real mods in the game. The code and its tests remain in place.
+constexpr bool kModsEnabled = false;
+
+struct UpdateCheck {
+    bool ok = false;
+    LauncherRelease release;
+    std::wstring error;
+};
 constexpr int kClientW = 600, kClientH = 476;
 
 struct Control { HWND hwnd; Page page; int x, y, w, h; };
@@ -64,6 +78,7 @@ HANDLE g_process;
 fs::path g_capture;  // --capture: render each tab to PNG here and exit
 bool g_installing = false;
 std::atomic<bool> g_cancel_install{false};
+bool g_updating = false;
 
 int px(int logical) { return MulDiv(logical, (int)g_dpi, 96); }
 HWND item(int id)
@@ -290,6 +305,10 @@ void describe_mod(int index)
 
 void mods_status()
 {
+    if (!kModsEnabled) {
+        SetWindowTextW(item(IDC_PLAY_SUMMARY), L"Mods: coming in a later launcher release.");
+        return;
+    }
     auto want = selected_mods(), have = installed_mods(g_game);
     std::wstring text;
     if (want == have) text = have.empty() ? L"No mods installed." : std::to_wstring(have.size()) + L" mod(s) installed.";
@@ -299,6 +318,13 @@ void mods_status()
 
 void load_mods()
 {
+    if (!kModsEnabled) {
+        // Nothing is read from or written to the game folder for mods.
+        SetWindowTextW(item(IDC_MOD_INFO), L"Mods are switched off in this release while installing them is tested "
+                                            L"in the game. They will be turned on in a later launcher update.");
+        mods_status();
+        return;
+    }
     ensure_mods_readme(g_game);
     g_mods = find_mods(g_game);
     auto installed = installed_mods(g_game);
@@ -366,7 +392,7 @@ void play()
         return;
     }
     if (game_running(g_game)) { ask(L"The game is already running.", MB_OK | MB_ICONINFORMATION); return; }
-    if (!save_settings() || !apply_selected_mods(true)) return;
+    if (!save_settings() || (kModsEnabled && !apply_selected_mods(true))) return;
     void* process = nullptr;
     std::wstring error;
     if (!start_game(g_game, &process, error)) { ask(error, MB_OK | MB_ICONERROR); return; }
@@ -593,6 +619,85 @@ void browse_image()
     install_status(problem.empty() ? L"X-Men Legends disc image found." : problem);
 }
 
+
+// ---- launcher updates ----------------------------------------------------------
+
+fs::path own_exe()
+{
+    wchar_t path[MAX_PATH * 4];
+    return fs::path(std::wstring(path, GetModuleFileNameW(nullptr, path, (DWORD)std::size(path))));
+}
+
+void check_for_update(bool manual)
+{
+    if (g_updating) return;
+    if (manual) {
+        EnableWindow(item(IDC_CHECK_UPDATES), FALSE);
+        status(L"Checking for launcher updates...");
+    }
+    std::thread([hwnd = g_main, manual] {
+        auto* check = new UpdateCheck;
+        check->ok = latest_launcher(check->release, check->error);
+        PostMessageW(hwnd, WM_UPDATE_CHECKED, manual, (LPARAM)check);
+    }).detach();
+}
+
+void update_checked(bool manual, const UpdateCheck& check)
+{
+    EnableWindow(item(IDC_CHECK_UPDATES), TRUE);
+    const std::wstring current = widen(LAUNCHER_VERSION_TEXT);
+    if (!check.ok) {
+        // A quiet start-up check stays quiet when offline.
+        if (manual) { status(L"Could not check for updates."); ask(check.error, MB_OK | MB_ICONWARNING); }
+        return;
+    }
+    if (compare_versions(check.release.tag, current) <= 0) {
+        if (manual) status(L"The launcher is up to date (version " + current + L").");
+        return;
+    }
+    if (!manual && widen(preference("SkippedVersion")) == check.release.tag) return;
+    std::wstring notes = check.release.notes;
+    if (notes.size() > 900) notes = notes.substr(0, 900) + L"...";
+    std::wstring text = L"Launcher " + check.release.tag + L" is available. You have version " + current + L".";
+    if (!notes.empty()) text += L"\n\n" + notes;
+    text += L"\n\nUpdate now? The launcher restarts when it is done.";
+    if (ask(text, MB_YESNO | MB_ICONINFORMATION) != IDYES) {
+        if (!manual) set_preference("SkippedVersion", narrow(check.release.tag));
+        status(L"Launcher update " + check.release.tag + L" skipped.");
+        return;
+    }
+    g_updating = true;
+    EnableWindow(item(IDC_CHECK_UPDATES), FALSE);
+    status(L"Downloading launcher " + check.release.tag + L"...");
+    std::thread([hwnd = g_main, release = check.release, exe = own_exe()] {
+        std::wstring error;
+        bool ok = install_launcher_update(release, exe, [](uint64_t, uint64_t) { return true; }, error);
+        PostMessageW(hwnd, WM_UPDATE_DONE, ok, (LPARAM) new std::wstring(error));
+    }).detach();
+}
+
+void update_done(bool ok, const std::wstring& error)
+{
+    g_updating = false;
+    EnableWindow(item(IDC_CHECK_UPDATES), TRUE);
+    if (!ok) {
+        status(L"The launcher was not updated.");
+        ask(L"The launcher could not be updated:\n\n" + error, MB_OK | MB_ICONERROR);
+        return;
+    }
+    // Start the new launcher, then close this one. A running game is not affected.
+    std::wstring exe = own_exe().wstring(), command = L"\"" + exe + L"\"";
+    STARTUPINFOW startup{sizeof(startup)};
+    PROCESS_INFORMATION info{};
+    if (CreateProcessW(exe.c_str(), command.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startup, &info)) {
+        CloseHandle(info.hThread);
+        CloseHandle(info.hProcess);
+        DestroyWindow(g_main);
+        return;
+    }
+    status(L"Updated. Restart the launcher to use the new version.");
+}
+
 // ---- building the window -----------------------------------------------------
 
 INT_PTR CALLBACK page_proc(HWND hwnd, UINT message, WPARAM w, LPARAM l)
@@ -642,6 +747,8 @@ void build()
     label(kPlay, L"", 140, 212, 290, 20, IDC_FOLDER, SS_PATHELLIPSIS | SS_NOPREFIX);
     button(kPlay, L"Change...", 440, 206, 96, 28, IDC_CHANGE_FOLDER);
     label(kPlay, L"", 12, 264, 540, 20, IDC_PLAY_SUMMARY);
+    label(kPlay, (L"Launcher version " + widen(LAUNCHER_VERSION_TEXT)).c_str(), 12, 330, 300, 20, IDC_VERSION);
+    button(kPlay, L"Check for updates", 402, 324, 150, 28, IDC_CHECK_UPDATES);
 
     // Settings: the PC options the game's own menus offer.
     group(kSettings, L"Graphics", 12, 8, 540, 58);
@@ -695,6 +802,8 @@ void build()
     button(kMods, L"Open mods folder", 12, 318, 130, 28, IDC_OPEN_MODS);
     button(kMods, L"Refresh", 150, 318, 90, 28, IDC_REFRESH_MODS);
     button(kMods, L"Apply mods", 422, 318, 130, 28, IDC_APPLY_MODS);
+    if (!kModsEnabled)
+        for (int id : {IDC_MOD_LIST, IDC_MODDER, IDC_OPEN_MODS, IDC_REFRESH_MODS, IDC_APPLY_MODS}) EnableWindow(item(id), FALSE);
 
     // Install: from the player's own disc image, as the release instructions say.
     group(kInstall, L"1.  Your X-Men Legends disc image (ISO or XISO)", 12, 8, 540, 62);
@@ -755,6 +864,7 @@ void command(int id, int code)
         break;
     case IDC_REFRESH_MODS: if (!g_game.empty()) load_mods(); break;
     case IDC_INSTALL: start_install(); break;
+    case IDC_CHECK_UPDATES: check_for_update(true); break;
     case IDC_BROWSE_IMAGE: browse_image(); break;
     case IDC_DOWNLOAD: case IDC_LOCAL_ZIP: install_controls_enabled(!g_installing); break;
     case IDC_BROWSE_ZIP: {
@@ -820,6 +930,16 @@ LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM w, LPARAM l)
         }
         return 0;
     case WM_GAME_EXITED: game_exited((DWORD)w); return 0;
+    case WM_UPDATE_CHECKED: {
+        std::unique_ptr<UpdateCheck> check((UpdateCheck*)l);
+        update_checked(w != 0, *check);
+        return 0;
+    }
+    case WM_UPDATE_DONE: {
+        std::unique_ptr<std::wstring> error((std::wstring*)l);
+        update_done(w != 0, *error);
+        return 0;
+    }
     case WM_INSTALL_PROGRESS: {
         std::unique_ptr<std::wstring> text((std::wstring*)l);
         SendMessageW(item(IDC_PROGRESS), PBM_SETPOS, w, 0);
@@ -983,6 +1103,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE, PWSTR, int show)
         use_game_folder(folder);
     }
     SetFocus(item(IDC_PLAY));
+    // Tidy up after an update, then look for the next one in the background.
+    remove_previous_launcher(own_exe());
+    check_for_update(false);
 
     MSG msg;
     while (GetMessageW(&msg, nullptr, 0, 0) > 0) {

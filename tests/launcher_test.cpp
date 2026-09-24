@@ -202,6 +202,46 @@ static void camera_test()
     CHECK(!std::memcmp(&s, &defaults, sizeof(s)));
 }
 
+static void updater_test(const fs::path& scratch)
+{
+    CHECK(compare_versions(L"v0.2.0", L"0.1.0") > 0);
+    CHECK(compare_versions(L"v0.1.0", L"0.1.0") == 0);
+    CHECK(compare_versions(L"0.1.9", L"v0.1.10") < 0);
+    CHECK(compare_versions(L"v1", L"0.9.9") > 0);
+    CHECK(compare_versions(L"v0.1.0-beta", L"0.1.0") == 0);
+
+    // Swap the exe of a program that is running, as the updater does to itself.
+    fs::path dir = scratch / L"updater";
+    fs::create_directories(dir);
+    fs::path exe = dir / L"running.exe";
+    wchar_t system[MAX_PATH];
+    GetSystemDirectoryW(system, MAX_PATH);
+    fs::copy_file(fs::path(system) / L"ping.exe", exe);
+    std::wstring command = L"\"" + exe.wstring() + L"\" -n 6 127.0.0.1";
+    STARTUPINFOW startup{sizeof(startup)};
+    PROCESS_INFORMATION process{};
+    CHECK(CreateProcessW(exe.c_str(), command.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &startup, &process));
+    Sleep(300);
+    CHECK(WaitForSingleObject(process.hProcess, 0) == WAIT_TIMEOUT);  // still running
+    fs::path incoming = dir / L"running.exe.new";
+    write(incoming, "MZ new launcher");
+    std::wstring error;
+    CHECK(replace_running_exe(exe, incoming, error));
+    if (!error.empty()) std::printf("  %ls\n", error.c_str());
+    CHECK(read(exe) == "MZ new launcher");
+    CHECK(fs::exists(dir / L"running.exe.old") && !fs::exists(incoming));
+    TerminateProcess(process.hProcess, 0);
+    WaitForSingleObject(process.hProcess, 5000);
+    CloseHandle(process.hThread);
+    CloseHandle(process.hProcess);
+    remove_previous_launcher(exe);
+    CHECK(!fs::exists(dir / L"running.exe.old"));
+
+    // A failed swap leaves the working program where it was.
+    CHECK(!replace_running_exe(exe, dir / L"missing.exe", error));
+    CHECK(read(exe) == "MZ new launcher");
+}
+
 static void sound_repair_test(const fs::path& scratch)
 {
     fs::path game = scratch / L"sounds-game";
@@ -279,6 +319,7 @@ int main(int argc, char** argv)
     install_test(scratch / L"game");
     camera_test();
     sound_repair_test(scratch);
+    updater_test(scratch);
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--game" && i + 1 < argc) real_data_test(fs::u8path(argv[++i]), scratch);
