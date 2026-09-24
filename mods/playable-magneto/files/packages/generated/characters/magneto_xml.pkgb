@@ -1,3 +1,4 @@
 <packagedef>
+<xml filename="data/entities/magnetoboss_ents"/>
 <fightstyle filename="data/powerstyles/ps_magnetohero"/>
 </packagedef>

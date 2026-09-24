@@ -189,6 +189,10 @@ install. The launcher asks for the folder the first time and remembers it. Witho
 imports are skipped and the rest of the mod still installs. Anything under `with-imports\` (its own
 `files`, `merge` and `append`) is used only when every import was found.
 
+**Copies inside the game.** A `[Copy]` section's `source = target` lines copy a game file to a new name,
+for example an animation set to edit separately. A file of the same target under `files\` replaces the
+copy. Uninstalling removes it.
+
 **Template character.** [`mods/playable-magneto`](mods/playable-magneto) adds a new
 playable hero, and its README explains every file a character needs.
 

@@ -1,26 +1,32 @@
 <PowerStyle IconFile="textures/ui/magneto_icons1.png" IconColumns="4" IconRows="4" CanSteal="true" exclusive="magneto">
-<FightMove Name="magbolt1" lockangles="true" animenum="ea_power1" priority="5" aitype="projectile" aireusetime="5" icon="6" comboTextStarter="Magnetic" comboTextFinisher="Bolt">
+<FightMove Name="magbolt1" lockangles="true" animenum="ea_power1" priority="5" aitype="projectile" aireusetime="5" icon="6" comboTextStarter="Magnetic" comboTextFinisher="Prison">
 <require cat="skill" item="magneto_bolt" level="1"/>
+<trigger time="-1" name="sound" sound="character/magnet_m/shieldb"/>
+<trigger time="0.4" name="sound" sound="character/magnet_m/power1"/>
 <trigger time="0" name="effect" effect="powers/magneto_pow1_charge" bolt="Bip01 L Hand"/>
 <trigger time="0" name="effect" effect="powers/magneto_pow1_arc"/>
-<trigger time="0.4" name="sound" sound="character/magnet_m/power1"/>
-<trigger tag="1" time="0.5" name="metal_balls" inherit="beam" spawneffect="powers/magneto_pow1_beamatk" beameffect="powers/magneto_pow1_beam" HitEffect="powers/magneto_pow1_hit" VictimEventTag="0" DamageType="dmg_magnetic" Damage="L2" beamBolt="Bip01 L Hand" PowerUsage="P1" PowerAttack="true" maxrange="800" damagelevel="3" radius="10"/>
+<trigger time="-1" tag="10" name="powerup" life="1.5" powerup="move" level="0" affect_type="scale" skin="2504" func_activate="immobolizeactivate" func_deactivate="frozendeactivate"/>
+<trigger tag="1" time="0.55" name="metal_balls" inherit="beam" spawneffect="powers/magneto_pow1_beamatk" beameffect="powers/magneto_pow1_beam" HitEffect="powers/magneto_pow1_hit" VictimEventTag="10" DamageType="dmg_magnetic" Damage="L2" beamBolt="Bip01 L Hand" PowerUsage="P1" PowerAttack="true" maxrange="800" damagelevel="3" radius="10"/>
 <chain action="idle" result="idle"/>
 </FightMove>
 <FightMove Name="magbolt2" fallback="magbolt1" inherit="magbolt1">
 <require cat="skill" item="magneto_bolt" level="2"/>
+<trigger tag="10" life="2"/>
 <trigger tag="1" Damage="L3" PowerUsage="P1+"/>
 </FightMove>
 <FightMove Name="magbolt3" fallback="magbolt2" inherit="magbolt2">
 <require cat="skill" item="magneto_bolt" level="3"/>
+<trigger tag="10" life="2.5"/>
 <trigger tag="1" Damage="L4" PowerUsage="P2"/>
 </FightMove>
 <FightMove Name="magbolt4" fallback="magbolt3" inherit="magbolt3">
 <require cat="skill" item="magneto_bolt" level="4"/>
+<trigger tag="10" life="3"/>
 <trigger tag="1" Damage="L5" PowerUsage="P2+"/>
 </FightMove>
 <FightMove Name="magbolt5" fallback="magbolt4" inherit="magbolt4">
 <require cat="skill" item="magneto_bolt" level="5"/>
+<trigger tag="10" life="3.5"/>
 <trigger tag="1" Damage="M1" PowerUsage="P3"/>
 </FightMove>
 <FightMove Name="magcrush1" lockangles="true" animenum="ea_power8" priority="5" aitype="projectile" aireusetime="10" icon="1" comboTextStarter="Magnetic" comboTextFinisher="Crush">
@@ -53,10 +59,73 @@
 <trigger tag="1" Damage="M2" PowerUsage="P3"/>
 <trigger tag="2" Damage="M2" PowerUsage="P3"/>
 </FightMove>
+<FightMove Name="magshield1" lockangles="true" animenum="ea_power3" priority="5" aitype="buffself" aireusetime="20" icon="0">
+<require cat="skill" item="magneto_shield" level="1"/>
+<trigger time="0" name="sound" sound="character/magnet_m/shieldb"/>
+<trigger time="0.3" name="bolton" type="ce_bolton" model="models/bolton/magneto_spheres" bolt="Bip01 Neck" replacecurrent="true" boltslot="ebolton_weapon"/>
+<trigger time="0.95" name="removebolton" type="ce_bolton" removebolton="true" boltslot="ebolton_weapon"/>
+<trigger time="0.5" tag="1" name="powerup" powerusage="P6" life="BST1" powerup="def_damage" level="A2" no_shadow="true" effect_cust1="powers/magneto_shield_hit" effect="powers/magneto_pow1_arc"/>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove Name="magshield2" fallback="magshield1" inherit="magshield1">
+<require cat="skill" item="magneto_shield" level="2"/>
+<trigger tag="1" life="BST2" level="A3" powerusage="P7"/>
+</FightMove>
+<FightMove Name="magshield3" fallback="magshield2" inherit="magshield2">
+<require cat="skill" item="magneto_shield" level="3"/>
+<trigger tag="1" life="BST3" level="A4" powerusage="P8"/>
+</FightMove>
+<FightMove Name="magshield4" fallback="magshield3" inherit="magshield3">
+<require cat="skill" item="magneto_shield" level="4"/>
+<trigger tag="1" life="BST4" level="A5" powerusage="P9"/>
+</FightMove>
+<FightMove Name="magshield5" fallback="magshield4" inherit="magshield4">
+<require cat="skill" item="magneto_shield" level="5"/>
+<trigger tag="1" life="BST5" level="A6" powerusage="P10"/>
+</FightMove>
+<FightMove Name="xtreme1" lockangles="true" animenum="ea_power4" priority="uninterruptable" icon="8" comboTextStarter="" comboTextFinisher="Shockwave">
+<require cat="skill" item="magneto_xtreme" level="1"/>
+<require cat="xtreme" level="1"/>
+<event name="mag_radial" inherit="punch" AttackType="blast" PowerAttack="true" DamageType="dmg_magnetic" Arc="180" damage="M1" knockback="K8">
+<damageMod name="dmgmod_auto_knockback"/>
+</event>
+<trigger time="0" name="xtreme_start"/>
+<trigger time="0" name="stop"/>
+<trigger time="0" name="effect" effect="powers/magneto_pow4_chaos"/>
+<trigger time="0" name="relative_spawn" filename="magnetoboss_ents" entity="debris" offset="0 0 60" attackerheight="false" absolute="false"/>
+<trigger time="0" name="sound" sound="character/magnet_m/power4"/>
+<trigger time="0.43" name="mag_radial" MaxRange="70"/>
+<trigger time="0.46" name="mag_radial" MaxRange="140"/>
+<trigger time="0.49" name="mag_radial" MaxRange="210"/>
+<trigger time="0.52" name="mag_radial" MaxRange="280"/>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove name="xtreme2" inherit="xtreme1" fallback="xtreme1">
+<require cat="level" level="XLT2"/>
+<event name="mag_radial" damage="M2"/>
+</FightMove>
+<FightMove name="xtreme3" inherit="xtreme2" fallback="xtreme2">
+<require cat="level" level="XLT3"/>
+<event name="mag_radial" damage="M3"/>
+</FightMove>
+<FightMove name="xtreme4" inherit="xtreme3" fallback="xtreme3">
+<require cat="level" level="XLT4"/>
+<event name="mag_radial" damage="M4"/>
+</FightMove>
+<FightMove name="xtreme5" inherit="xtreme4" fallback="xtreme4">
+<require cat="level" level="XLT5"/>
+<event name="mag_radial" damage="H1"/>
+</FightMove>
 <FightMove Name="power_attack" fallback="magbolt5" inherit="magbolt5">
 <require cat="skill" item="magneto_bolt" level="6"/>
 </FightMove>
 <FightMove Name="power_smash" fallback="magcrush5" inherit="magcrush5">
 <require cat="skill" item="magneto_crush" level="6"/>
+</FightMove>
+<FightMove Name="power_boost" fallback="magshield5" inherit="magshield5">
+<require cat="skill" item="magneto_shield" level="6"/>
+</FightMove>
+<FightMove Name="power_xtreme" fallback="xtreme5" inherit="xtreme5">
+<require cat="level" level="XLT6"/>
 </FightMove>
 </PowerStyle>

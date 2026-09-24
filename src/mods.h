@@ -31,6 +31,9 @@ struct ModInfo {
     // "source path in that game = target path in this one".
     std::wstring import_game, import_detect;
     std::vector<std::pair<fs::path, fs::path>> imports;
+    // [Copy]: "source = target", both in this game's own folder. The copy is a
+    // new file the mod owns; a file of the same target under files\ replaces it.
+    std::vector<std::pair<fs::path, fs::path>> game_copies;
 };
 
 // Where the player's install of another game is, by the name a mod gives it.

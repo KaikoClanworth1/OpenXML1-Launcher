@@ -207,6 +207,21 @@ static void install_test(const fs::path& game)
         fs::remove_all(game / L"packages");
     }
 
+    // [Copy]: a file duplicated within the game folder, overridable from files\.
+    {
+        write(game / L"actors/boss.igb", "boss anims");
+        write(mods / L"Dup/mod.ini", "[Mod]\nName = Dup\n\n[Copy]\nactors/boss.igb = actors/hero.igb\n");
+        result = apply_mods(game, {L"Dup"});
+        CHECK(result.ok && read(game / L"actors/hero.igb") == "boss anims" && read(game / L"actors/boss.igb") == "boss anims");
+        write(mods / L"Dup/files/actors/hero.igb", "edited anims");
+        result = apply_mods(game, {L"Dup"});
+        CHECK(result.ok && read(game / L"actors/hero.igb") == "edited anims");
+        result = apply_mods(game, {});
+        CHECK(result.ok && !fs::exists(game / L"actors/hero.igb"));
+        fs::remove_all(mods / L"Dup");
+        fs::remove(game / L"actors/boss.igb");
+    }
+
     // [Import]: files from the player's own copy of another game.
     {
         fs::path other = game.parent_path() / L"other-game";

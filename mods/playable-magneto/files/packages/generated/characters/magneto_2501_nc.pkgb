@@ -1,6 +1,6 @@
 <packagedef>
 <actorskin filename="2501"/>
-<actoranimdb filename="25_magneto"/>
+<actoranimdb filename="25_magnetohero"/>
 <model filename="hud/hud_head_2501"/>
 <model filename="ui/hud/characters/2501"/>
 <actoranimdb filename="99_cape"/>

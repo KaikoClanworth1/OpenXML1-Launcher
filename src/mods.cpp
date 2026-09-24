@@ -368,6 +368,8 @@ void read_imports(const fs::path& mod, ModInfo& info)
         else if (lower(widen(key)) == L"detect") info.import_detect = widen(value);
         else info.imports.push_back({fs::u8path(key), fs::u8path(value)});
     }
+    for (const auto& [key, value] : ini.section("Copy"))
+        info.game_copies.push_back({fs::u8path(key), fs::u8path(value)});
 }
 
 Plan make_plan(const fs::path& game, const std::vector<std::wstring>& enabled, std::vector<std::wstring>* skipped = nullptr)
@@ -389,6 +391,13 @@ Plan make_plan(const fs::path& game, const std::vector<std::wstring>& enabled, s
             auto key = key_of(target);
             plan.copy_owner[key] = folder;
             plan.copies[key] = {target, (other / source).wstring()};
+        }
+        for (const auto& [source, target] : info.game_copies) {
+            std::error_code ec;
+            if (!fs::is_regular_file(game / source, ec)) continue;  // reported by find_mods
+            auto key = key_of(target);
+            plan.copy_owner[key] = folder;
+            plan.copies[key] = {target, (game / source).wstring()};
         }
         // with-imports\ holds the parts that only make sense once every
         // imported file is in place (for example, using an imported model).
@@ -590,6 +599,13 @@ std::vector<ModInfo> find_mods(const fs::path& game)
             if (why.empty() && mod.import_game.empty()) why = L"[Import] needs Game = the game's name";
             if (!why.empty()) { mod.problem = L"import " + target.wstring() + L": " + why; break; }
         }
+        for (const auto& [source, target] : mod.game_copies) {
+            if (!mod.problem.empty()) break;
+            auto why = unsafe_path(target);
+            std::error_code ec;
+            if (why.empty() && !fs::is_regular_file(game / source, ec)) why = L"the game has no " + source.wstring() + L" to copy";
+            if (!why.empty()) mod.problem = L"copy " + target.wstring() + L": " + why;
+        }
         auto appends = files_under(entry.path() / L"append");
         mod.files = (unsigned)files.size();
         mod.merges = (unsigned)merges.size();
@@ -612,7 +628,7 @@ std::vector<ModInfo> find_mods(const fs::path& game)
             if (why.empty() && !fs::exists(game / relative)) why = L"the game has no such file to append to";
             if (!why.empty()) mod.problem = L"append\\" + relative.wstring() + L": " + why;
         }
-        if (mod.problem.empty() && !mod.files && !mod.merges && !mod.appends && mod.imports.empty()) mod.problem = L"has no files\\, merge\\ or append\\ folder";
+        if (mod.problem.empty() && !mod.files && !mod.merges && !mod.appends && mod.imports.empty() && mod.game_copies.empty()) mod.problem = L"has no files\\, merge\\ or append\\ folder";
         mods.push_back(mod);
     }
     std::sort(mods.begin(), mods.end(), [](const ModInfo& a, const ModInfo& b) { return lower(a.name) < lower(b.name); });
