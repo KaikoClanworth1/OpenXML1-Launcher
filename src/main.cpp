@@ -360,9 +360,20 @@ void load_mods()
     g_populating = false;
     describe_mod(-1);
     mods_status();
+    // A ticked mod that the launcher just refreshed is reinstalled straight
+    // away, so the game never keeps playing an older version of it.
+    bool stale = false;
     for (const auto& folder : refreshed)
-        if (std::find(previously.begin(), previously.end(), folder) != previously.end())
-            status(folder + L" was updated by the launcher. Press Apply mods to install the new version.");
+        if (std::find(previously.begin(), previously.end(), folder) != previously.end()) stale = true;
+    if (stale && g_capture.empty()) {
+        if (game_running(g_game)) {
+            status(L"A mod was updated. Close the game and press Apply mods to install the new version.");
+        } else {
+            auto result = apply_mods(g_game, previously);
+            status(result.ok ? L"Installed the updated version of your mods." : L"An updated mod could not be installed: " + result.error);
+            mods_status();
+        }
+    }
 }
 
 bool apply_selected_mods(bool only_if_changed)
