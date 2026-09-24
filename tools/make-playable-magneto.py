@@ -29,7 +29,7 @@ w('mod.ini', f"""[Mod]
 Name = Playable Magneto
 Type = character
 Author = KaikoClanworth1
-Version = 0.5
+Version = 0.6
 Description = Magneto as a playable hero from level 1, with the final boss's powers: Magnetic Bolt, Magnetic Crush, Sphere Shield and the Magnetic Shockwave Xtreme, with his own roster portrait and power icons.
 
 [Copy]
@@ -84,9 +84,7 @@ def powerstyle():
 <FightMove Name="magshield1" lockangles="true" animenum="ea_power3" priority="5" aitype="buffself" aireusetime="20" icon="{ICON['shield']}">
 <require cat="skill" item="magneto_shield" level="1"/>
 <trigger time="0" name="sound" sound="character/magnet_m/shieldb"/>
-<trigger time="0.3" name="bolton" type="ce_bolton" model="models/bolton/magneto_spheres" bolt="Bip01 Neck" replacecurrent="true" boltslot="ebolton_weapon"/>
-<trigger time="0.95" name="removebolton" type="ce_bolton" removebolton="true" boltslot="ebolton_weapon"/>
-<trigger time="0.5" tag="1" name="powerup" powerusage="{SHIELD_USE[0]}" life="BST1" powerup="def_damage" level="A2" no_shadow="true" effect_cust1="powers/magneto_shield_hit" effect="powers/magneto_pow1_arc"/>
+<trigger time="0.5" tag="1" name="powerup" powerusage="{SHIELD_USE[0]}" life="BST1" powerup="def_damage" level="A2" no_shadow="true" effect_cust1="powers/magneto_shield_hit" bolton="models/bolton/magneto_spheres" fx_bolt="Bip01 Neck"/>
 <chain action="idle" result="idle"/>
 </FightMove>
 {rank_moves("magshield", "magneto_shield", 5, lambda i: f'<trigger tag="1" life="BST{i + 1}" level="A{i + 2}" powerusage="{SHIELD_USE[i]}"/>')}

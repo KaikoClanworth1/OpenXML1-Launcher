@@ -24,10 +24,11 @@ when the level loads.
 
 The generator that wrote this mod is in the repository as `tools/make-playable-magneto.py`.
 
-## Adding menu animations
+## Menu animations
 
 The boss's animation set has no `menu_idle` / `menu_action` animations, so his pad on the Change Team
-screen is empty. To add them, edit the set (for example with an IGB Blender plugin) and put the result at:
+screen is empty. No available IGB editor handles XML1 animation sets yet. When one does, put the edited
+set at:
 
     mods/playable-magneto/files/actors/25_magnetohero.igb
 
@@ -40,7 +41,7 @@ never changed.
 |---|---|---|---|
 | A | **Magnetic Bolt** | level 1 | His beam. A target it hits is encased in metal for 1.5 to 3.5 seconds. Damage L2 to M1. |
 | B | **Magnetic Crush** | level 2 | His two-handed crush. Damage L3 to M2. |
-| Boost | **Sphere Shield** | level 5 (costs 2 points) | His metal spheres. A timed damage shield (`BST` time, `A` armour, as Storm's shield) that flashes his shield-hit effect when struck. |
+| Boost | **Sphere Shield** | level 5 (costs 2 points) | His metal spheres orbit him for as long as the shield lasts: a timed damage shield (`BST` time, `A` armour, as Storm's shield) that flashes his shield-hit effect when struck. The spheres ride on the shield itself (`bolton=` and `fx_bolt=` on the powerup, as Iceman's ice blades do), so they leave when it ends. |
 | Xtreme | **Magnetic Shockwave** | level 15 (costs 2 points) | His four expanding rings of force, with flying debris. Damage M1 to H1, knockback. |
 
 The boss's immunities are left out.
@@ -54,7 +55,8 @@ the test only, Crush and Shield started at rank 1.
 - His powers screen (Details, then the powers tab) shows all four of his icons.
 - He joins at level 1 (70 HP, 83 EP) with his cape.
 - Magnetic Bolt, Magnetic Crush and Sphere Shield all play their effects and cost energy.
-- The spheres circle him while he casts the shield.
+- The spheres orbit him for the whole shield (seen at 1, 3, 8 and 15 seconds) and are gone once it ends
+  (30 seconds).
 - The level plays normally with no crash.
 
 ## Known limits
@@ -62,6 +64,4 @@ the test only, Crush and Shield started at rank 1.
 - **Not yet seen in play:**
   - the metal prison on an enemy the bolt hits
   - the Xtreme, which needs level 15 and a full Xtreme meter
-- **The spheres show only while he casts.** The shield itself lasts its full time. The game's bolt-ons have
-  no timer, so keeping them for the whole shield would need a removal hook the engine does not offer.
 - **No flight.** His XML1 model has no flying animations.

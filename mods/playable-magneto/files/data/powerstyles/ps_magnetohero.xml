@@ -62,9 +62,7 @@
 <FightMove Name="magshield1" lockangles="true" animenum="ea_power3" priority="5" aitype="buffself" aireusetime="20" icon="0">
 <require cat="skill" item="magneto_shield" level="1"/>
 <trigger time="0" name="sound" sound="character/magnet_m/shieldb"/>
-<trigger time="0.3" name="bolton" type="ce_bolton" model="models/bolton/magneto_spheres" bolt="Bip01 Neck" replacecurrent="true" boltslot="ebolton_weapon"/>
-<trigger time="0.95" name="removebolton" type="ce_bolton" removebolton="true" boltslot="ebolton_weapon"/>
-<trigger time="0.5" tag="1" name="powerup" powerusage="P6" life="BST1" powerup="def_damage" level="A2" no_shadow="true" effect_cust1="powers/magneto_shield_hit" effect="powers/magneto_pow1_arc"/>
+<trigger time="0.5" tag="1" name="powerup" powerusage="P6" life="BST1" powerup="def_damage" level="A2" no_shadow="true" effect_cust1="powers/magneto_shield_hit" bolton="models/bolton/magneto_spheres" fx_bolt="Bip01 Neck"/>
 <chain action="idle" result="idle"/>
 </FightMove>
 <FightMove Name="magshield2" fallback="magshield1" inherit="magshield1">
