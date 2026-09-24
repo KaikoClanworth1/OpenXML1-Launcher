@@ -10,6 +10,7 @@
 #include "install.h"
 #include "mods.h"
 #include "release.h"
+#include "version.h"
 #include "xiso.h"
 #include "text.h"
 #include "xmlb.h"
@@ -308,6 +309,28 @@ static void full_install_test(const fs::path& image, const fs::path& zip, const 
     std::printf("installed %zu files into %ls\n", count, target.c_str());
 }
 
+// Against the published release: what the updater sees, and that it can
+// swap the release's exe into place, byte-identical to `built`.
+static void release_check(const fs::path& scratch, const fs::path& built)
+{
+    LauncherRelease release;
+    std::wstring error;
+    CHECK(latest_launcher(release, error));
+    if (!error.empty()) { std::printf("  %ls\n", error.c_str()); return; }
+    std::printf("latest release %ls, %llu bytes, %ls\n", release.tag.c_str(), (unsigned long long)release.size, release.url.c_str());
+    CHECK(compare_versions(release.tag, L"" LAUNCHER_VERSION_TEXT) >= 0);
+    fs::path dir = scratch / L"release-check";
+    fs::create_directories(dir);
+    fs::path exe = dir / L"X-Men Legends Launcher.exe";
+    write(exe, "MZ the previous launcher");
+    CHECK(install_launcher_update(release, exe, [](uint64_t, uint64_t) { return true; }, error));
+    if (!error.empty()) std::printf("  %ls\n", error.c_str());
+    CHECK(read(exe) == read(built));
+    CHECK(read(dir / L"X-Men Legends Launcher.exe.old") == "MZ the previous launcher");
+    remove_previous_launcher(exe);
+    CHECK(!fs::exists(dir / L"X-Men Legends Launcher.exe.old"));
+}
+
 int main(int argc, char** argv)
 {
     wchar_t temp[MAX_PATH];
@@ -324,6 +347,7 @@ int main(int argc, char** argv)
         std::string arg = argv[i];
         if (arg == "--game" && i + 1 < argc) real_data_test(fs::u8path(argv[++i]), scratch);
         else if (arg == "--image" && i + 1 < argc) image_test(fs::u8path(argv[++i]));
+        else if (arg == "--release-check" && i + 1 < argc) release_check(scratch, fs::u8path(argv[++i]));
         else if (arg == "--install" && i + 3 < argc) {
             full_install_test(fs::u8path(argv[i + 1]), fs::u8path(argv[i + 2]), fs::u8path(argv[i + 3]));
             i += 3;
