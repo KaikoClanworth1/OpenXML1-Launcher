@@ -3,6 +3,7 @@
 <actoranimdb filename="25_magnetohero"/>
 <model filename="hud/hud_head_2501"/>
 <model filename="ui/hud/characters/2501"/>
+<texture filename="textures/ui/magneto_all"/>
 <actoranimdb filename="99_cape"/>
 <actoranimdb filename="9901"/>
 </packagedef>

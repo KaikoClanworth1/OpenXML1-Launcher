@@ -29,16 +29,11 @@ w('mod.ini', f"""[Mod]
 Name = Playable Magneto
 Type = character
 Author = KaikoClanworth1
-Version = 0.4
-Description = Magneto as a playable hero from level 1, with the final boss's powers: Magnetic Bolt, Magnetic Crush, Sphere Shield and the Magnetic Shockwave Xtreme, and his own roster portrait. With your own X-Men Legends II installed, he also gets its power icons.
+Version = 0.5
+Description = Magneto as a playable hero from level 1, with the final boss's powers: Magnetic Bolt, Magnetic Crush, Sphere Shield and the Magnetic Shockwave Xtreme, with his own roster portrait and power icons.
 
 [Copy]
 actors/25_magnetoboss.igb = actors/{ANIMS}.igb
-
-[Import]
-Game = X-Men Legends II
-Detect = XMen2.exe
-textures/ui/magneto_icons1.igb = textures/ui/magneto_icons1.igb
 """)
 
 # ---- powers ---------------------------------------------------------------------
@@ -48,8 +43,9 @@ HOLD = ['1.5', '2', '2.5', '3', '3.5']           # seconds encased in metal
 CRUSH = ['L3', 'L4', 'L5', 'M1', 'M2']
 SHIELD_USE = ['P6', 'P7', 'P8', 'P9', 'P10']
 XTREME = ['M1', 'M2', 'M3', 'M4', 'H1']
-# XML2's icon sheet: Magnetic Blast, Magnetic Shell, Polarized Shield, METALLIC MAYHEM
-ICON = {'bolt': 6, 'crush': 1, 'shield': 0, 'xtreme': 8}
+# His icon sheet (textures/ui/magneto_all), 2 x 2 as every XML1 hero's is:
+# 0 spheres, 1 radial burst, 2 metal girder, 3 beam.
+ICON = {'bolt': 3, 'crush': 2, 'shield': 0, 'xtreme': 1}
 
 
 def rank_moves(prefix, talent, count, body):
@@ -60,9 +56,8 @@ def rank_moves(prefix, talent, count, body):
     return '\n'.join(out)
 
 
-def powerstyle(icons):
-    head = ('<PowerStyle IconFile="textures/ui/magneto_icons1.png" IconColumns="4" IconRows="4" CanSteal="true" exclusive="magneto">'
-            if icons else '<PowerStyle CanSteal="true" exclusive="magneto">')
+def powerstyle():
+    head = '<PowerStyle IconFile="textures/ui/magneto_all.png" IconColumns="2" IconRows="2" CanSteal="true" exclusive="magneto">'
     return head + f'''
 <FightMove Name="magbolt1" lockangles="true" animenum="ea_power1" priority="5" aitype="projectile" aireusetime="5" icon="{ICON['bolt']}" comboTextStarter="Magnetic" comboTextFinisher="Prison">
 <require cat="skill" item="magneto_bolt" level="1"/>
@@ -140,8 +135,8 @@ def talent(name, descname, description, icon_attr, icon, power, levels, first_co
             f'{icon_attr} icon="{icon}" power="{power}">\n' + '\n'.join(rows) + '\n</Talent>')
 
 
-def hero(imported):
-    icon = ' icon_texture="textures/ui/magneto_icons1.png"' if imported else ''
+def hero():
+    icon = ' icon_texture="textures/ui/magneto_all.png"'
     bolt = talent('magneto_bolt', 'Magnetic Bolt', 'A beam of magnetic force that encases its target in metal.', icon, ICON['bolt'], 0,
                   [(f'^{BOLT[i]} Magnetic Damage. Held {HOLD[i]} seconds. ^{USAGE[i]} Energy.', [None, 3, 5, 7, 9][i]) for i in range(5)])
     crush = talent('magneto_crush', 'Magnetic Crush', 'Two beams of crushing magnetic force.', icon, ICON['crush'], 1,
@@ -173,15 +168,16 @@ EFFECTS = ['magneto_pow1_charge', 'magneto_pow1_hit', 'magneto_pow1_arc', 'magne
            'magneto_pow2_charge', 'magneto_pow2_grow', 'magneto_pow2_sentatk', 'magneto_pow2_beam', 'magneto_pow2_hit',
            'magneto_pow4_chaos', 'magneto_shield_hit']
 SKIN = (f'<actorskin filename="2501"/>\n<actoranimdb filename="{ANIMS}"/>\n'
-        '<model filename="hud/hud_head_2501"/>\n<model filename="ui/hud/characters/2501"/>\n')
+        '<model filename="hud/hud_head_2501"/>\n<model filename="ui/hud/characters/2501"/>\n'
+        '<texture filename="textures/ui/magneto_all"/>\n')
 CAPE = '<actoranimdb filename="99_cape"/>\n<actoranimdb filename="9901"/>\n'
 POWERS = (''.join(f'<effect filename="powers/{e}"/>\n' for e in EFFECTS) +
           '<actorskin filename="2504"/>\n<model filename="models/effects/magneto_blast"/>\n'
           '<xml filename="data/entities/magnetoboss_ents"/>\n'
           '<model filename="models/bolton/magneto_spheres"/>\n<model filename="models/bolton/magneto_hiteffect"/>\n')
 
-w('merge/data/herostat.eng', hero(False))
-w('files/data/powerstyles/ps_magnetohero.xml', powerstyle(False))
+w('merge/data/herostat.eng', hero())
+w('files/data/powerstyles/ps_magnetohero.xml', powerstyle())
 w('files/packages/generated/characters/magneto_2501.pkgb', '<packagedef>\n' + SKIN + POWERS +
   '<fightstyle filename="data/powerstyles/ps_magnetohero"/>\n' + CAPE + '</packagedef>\n')
 w('files/packages/generated/characters/magneto_2501_nc.pkgb', '<packagedef>\n' + SKIN + CAPE + '</packagedef>\n')
@@ -191,14 +187,13 @@ w('files/packages/generated/characters/magneto_xml.pkgb',
 portrait = M / 'files/ui/models/characters/2501.igb'
 portrait.parent.mkdir(parents=True, exist_ok=True)
 shutil.copyfile(Path(__file__).parent / 'assets/magneto-portrait-2501.igb', portrait)
+# His power icons, made for this mod (tools/assets/magneto-icons-all.igb).
+icons = M / 'files/textures/ui/magneto_all.igb'
+icons.parent.mkdir(parents=True, exist_ok=True)
+shutil.copyfile(Path(__file__).parent / 'assets/magneto-icons-all.igb', icons)
 w('merge/packages/generated/maps/package/menus/characters_heads.pkgb',
   '<packagedef>\n<model filename="ui/models/characters/2501"/>\n</packagedef>\n')
 for name in MISSION_SCRIPTS:
     w(f'append/scripts/missions/{name}', 'setInCampaign("magneto", "TRUE" )\n')
 
-# with-imports: used only when every [Import] file was found: XML2's power icons.
-w('with-imports/merge/data/herostat.eng', hero(True))
-w('with-imports/files/data/powerstyles/ps_magnetohero.xml', powerstyle(True))
-w('with-imports/merge/packages/generated/characters/magneto_2501.pkgb',
-  '<packagedef>\n<texture filename="textures/ui/magneto_icons1"/>\n</packagedef>\n')
 print('written', sum(1 for f in M.rglob('*') if f.is_file()), 'files')

@@ -1,5 +1,5 @@
-<PowerStyle CanSteal="true" exclusive="magneto">
-<FightMove Name="magbolt1" lockangles="true" animenum="ea_power1" priority="5" aitype="projectile" aireusetime="5" icon="6" comboTextStarter="Magnetic" comboTextFinisher="Prison">
+<PowerStyle IconFile="textures/ui/magneto_all.png" IconColumns="2" IconRows="2" CanSteal="true" exclusive="magneto">
+<FightMove Name="magbolt1" lockangles="true" animenum="ea_power1" priority="5" aitype="projectile" aireusetime="5" icon="3" comboTextStarter="Magnetic" comboTextFinisher="Prison">
 <require cat="skill" item="magneto_bolt" level="1"/>
 <trigger time="-1" name="sound" sound="character/magnet_m/shieldb"/>
 <trigger time="0.4" name="sound" sound="character/magnet_m/power1"/>
@@ -29,7 +29,7 @@
 <trigger tag="10" life="3.5"/>
 <trigger tag="1" Damage="M1" PowerUsage="P3"/>
 </FightMove>
-<FightMove Name="magcrush1" lockangles="true" animenum="ea_power8" priority="5" aitype="projectile" aireusetime="10" icon="1" comboTextStarter="Magnetic" comboTextFinisher="Crush">
+<FightMove Name="magcrush1" lockangles="true" animenum="ea_power8" priority="5" aitype="projectile" aireusetime="10" icon="2" comboTextStarter="Magnetic" comboTextFinisher="Crush">
 <require cat="skill" item="magneto_crush" level="1"/>
 <trigger time="0" name="sound" sound="character/magnet_m/power2"/>
 <trigger time="0" name="effect" effect="powers/magneto_pow2_charge" bolt="Bip01 L Hand"/>
@@ -83,7 +83,7 @@
 <require cat="skill" item="magneto_shield" level="5"/>
 <trigger tag="1" life="BST5" level="A6" powerusage="P10"/>
 </FightMove>
-<FightMove Name="xtreme1" lockangles="true" animenum="ea_power4" priority="uninterruptable" icon="8" comboTextStarter="" comboTextFinisher="Shockwave">
+<FightMove Name="xtreme1" lockangles="true" animenum="ea_power4" priority="uninterruptable" icon="1" comboTextStarter="" comboTextFinisher="Shockwave">
 <require cat="skill" item="magneto_xtreme" level="1"/>
 <require cat="xtreme" level="1"/>
 <event name="mag_radial" inherit="punch" AttackType="blast" PowerAttack="true" DamageType="dmg_magnetic" Arc="180" damage="M1" knockback="K8">

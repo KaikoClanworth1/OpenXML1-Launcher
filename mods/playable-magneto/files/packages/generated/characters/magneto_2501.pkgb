@@ -3,6 +3,7 @@
 <actoranimdb filename="25_magnetohero"/>
 <model filename="hud/hud_head_2501"/>
 <model filename="ui/hud/characters/2501"/>
+<texture filename="textures/ui/magneto_all"/>
 <effect filename="powers/magneto_pow1_charge"/>
 <effect filename="powers/magneto_pow1_hit"/>
 <effect filename="powers/magneto_pow1_arc"/>
