@@ -335,20 +335,6 @@ static void sound_repair_test(const fs::path& scratch)
     CHECK(!sounds_need_repair(game));
 }
 
-// Only the disc's exact leftover bytes count as stale; anything else is the
-// player's and is left alone. The replacement itself needs a real game's
-// z/assetsfb.zip: see --repair-disc.
-static void disc_data_test(const fs::path& scratch)
-{
-    fs::path game = scratch / L"disc-data-game";
-    write(game / L"data/herostat.eng", "<characters><stats name=\"Wolverine\" skin=\"0301\"/></characters>");
-    write(game / L"data/stat_rules.xml", "<STAT_RULES/>");
-    CHECK(stale_disc_data(game).empty());
-    std::wstring error;
-    CHECK(repair_disc_data(game, error) == 0 && error.empty());
-    CHECK(read(game / L"data/herostat.eng") == "<characters><stats name=\"Wolverine\" skin=\"0301\"/></characters>");
-}
-
 static void image_test(const fs::path& image)
 {
     Xiso disc;
@@ -426,7 +412,6 @@ int main(int argc, char** argv)
     install_test(scratch / L"game");
     camera_test();
     sound_repair_test(scratch);
-    disc_data_test(scratch);
     bundled_test(scratch);
     updater_test(scratch);
     for (int i = 1; i < argc; ++i) {
@@ -446,19 +431,6 @@ int main(int argc, char** argv)
             auto result = apply_mods(game, mods);
             CHECK(result.ok);
             std::printf("applied %zu mod(s): %s %ls\n", mods.size(), result.ok ? "ok" : "FAILED", result.error.c_str());
-        }
-        else if (arg == "--repair-disc" && i + 1 < argc) {
-            // --repair-disc <game folder>: replace the disc's stale data with
-            // the shipped copies from its z/assetsfb.zip, mods kept on top.
-            fs::path game = fs::u8path(argv[++i]);
-            auto mods = installed_mods(game);
-            for (const auto& file : stale_disc_data(game)) std::printf("stale: %ls\n", file.c_str());
-            std::wstring error;
-            unsigned replaced = repair_disc_data(game, error);
-            CHECK(error.empty());
-            CHECK(stale_disc_data(game).empty());
-            CHECK(installed_mods(game) == mods);
-            std::printf("replaced %u file(s) %ls\n", replaced, error.c_str());
         }
         else if (arg == "--install" && i + 3 < argc) {
             full_install_test(fs::u8path(argv[i + 1]), fs::u8path(argv[i + 2]), fs::u8path(argv[i + 3]));

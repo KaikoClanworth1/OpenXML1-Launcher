@@ -4,12 +4,8 @@
 #include "release.h"
 #include "text.h"
 #include "xiso.h"
-#include "xmlb.h"
-#include "miniz.h"
 #include <windows.h>
-#include <bcrypt.h>
 #include <cstdio>
-#include <fstream>
 
 namespace launcher {
 namespace {
@@ -95,131 +91,6 @@ unsigned repair_sounds(const fs::path& game, std::wstring& error)
     return moved;
 }
 
-namespace {
-
-// The disc's loose data/ folder holds development copies of four files that
-// z/assetsfb.zip also holds, in the versions the game shipped with. The Xbox
-// reads the zip first; OpenXML1 prefers loose files, and its first-run setup
-// keeps files that are already there, so the leftovers win. The leftover
-// herostat gives heroes costume slots with no model on the disc (Wolverine's
-// skin_aoa="04" names actors/0304.igb), and choosing one ends the game.
-// Only these exact disc bytes are replaced, never a player's own edits.
-struct StaleDiscFile { const char* path; const char* sha256; };
-const StaleDiscFile kStaleDiscData[] = {
-    {"data/herostat.eng", "4e5551d437ee03b4e0839288bb541471db3709e5c20b8b7f43bff245031600b6"},
-    {"data/herostat.fre", "3791f9be24a03e5be5eb8a6bd98e11596f3101486cff7c9d7310feb2afbf4342"},
-    {"data/herostat.ger", "2876a36c774d86936db8f344840ed374c0d91d4e5a590e01972cbc9e10572bdc"},
-    {"data/stat_rules.xml", "7b58ef450096bce7bacdd329fbbfdb436564fa915f539ea07aa22f70ce3847b5"},
-};
-
-std::string sha256_of(const fs::path& path)
-{
-    std::ifstream in(path, std::ios::binary);
-    if (!in) return {};
-    std::string bytes((std::istreambuf_iterator<char>(in)), {});
-    BCRYPT_ALG_HANDLE algorithm = nullptr;
-    unsigned char digest[32];
-    bool ok = BCryptOpenAlgorithmProvider(&algorithm, BCRYPT_SHA256_ALGORITHM, nullptr, 0) == 0;
-    ok = ok && BCryptHash(algorithm, nullptr, 0, (PUCHAR)bytes.data(), (ULONG)bytes.size(), digest, sizeof(digest)) == 0;
-    if (algorithm) BCryptCloseAlgorithmProvider(algorithm, 0);
-    if (!ok) return {};
-    std::string hex;
-    char two[3];
-    for (unsigned char byte : digest) { snprintf(two, sizeof(two), "%02x", byte); hex += two; }
-    return hex;
-}
-
-// Where a file's disc bytes are now: the mod store's backup while a mod has
-// replaced it, otherwise the game folder.
-fs::path original_of(const fs::path& game, const fs::path& relative)
-{
-    fs::path backup = mods_dir(game) / L".launcher" / L"backup" / relative;
-    std::error_code ec;
-    return fs::exists(backup, ec) ? backup : game / relative;
-}
-
-bool replace_file(const fs::path& target, const void* data, size_t size)
-{
-    fs::path temp = target; temp += L".launcher-tmp";
-    {
-        std::ofstream out(temp, std::ios::binary | std::ios::trunc);
-        out.write((const char*)data, (std::streamsize)size);
-        out.close();
-        if (!out) return false;
-    }
-    if (MoveFileExW(temp.c_str(), target.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) return true;
-    std::error_code ec;
-    fs::remove(temp, ec);
-    return false;
-}
-
-} // namespace
-
-std::vector<std::wstring> stale_disc_data(const fs::path& game)
-{
-    std::vector<std::wstring> stale;
-    for (const auto& file : kStaleDiscData)
-        if (sha256_of(original_of(game, fs::u8path(file.path))) == file.sha256) stale.push_back(widen(file.path));
-    return stale;
-}
-
-unsigned repair_disc_data(const fs::path& game, std::wstring& error)
-{
-    if (stale_disc_data(game).empty()) return 0;
-    // Take installed mods out so the files are back to the disc's, and put
-    // the same selection back on top of the shipped versions afterwards.
-    std::vector<std::wstring> mods = installed_mods(game);
-    if (!mods.empty()) {
-        auto removed = apply_mods(game, {});
-        if (!removed.ok) { error = L"Could not take the installed mods out first: " + removed.error; return 0; }
-    }
-    FILE* handle = _wfopen((game / L"z" / L"assetsfb.zip").c_str(), L"rb");
-    if (!handle) { error = L"Could not open z\\assetsfb.zip."; return 0; }
-    _fseeki64(handle, 0, SEEK_END);
-    mz_uint64 size = (mz_uint64)_ftelli64(handle);
-    _fseeki64(handle, 0, SEEK_SET);
-    mz_zip_archive zip{};
-    if (!mz_zip_reader_init_cfile(&zip, handle, size, 0)) {
-        fclose(handle);
-        error = L"z\\assetsfb.zip is damaged.";
-        return 0;
-    }
-    unsigned replaced = 0;
-    for (const auto& file : kStaleDiscData) {
-        fs::path relative = fs::u8path(file.path);
-        if (sha256_of(game / relative) != file.sha256) continue;
-        size_t length = 0;
-        void* shipped = mz_zip_reader_extract_file_to_heap(&zip, file.path, &length, 0);
-        if (!shipped) { error = L"z\\assetsfb.zip has no " + widen(file.path) + L"."; break; }
-        std::string text((const char*)shipped, length);
-        mz_free(shipped);
-        xml1::BinaryXml binary;
-        try {
-            binary = xml1::compile_xmlb(text);
-            if (xml1::compile_xmlb(xml1::decode_xmlb(binary.data(), (unsigned)binary.size())) != binary)
-                throw std::runtime_error("round-trip check failed");
-        } catch (const std::exception& e) {
-            error = relative.wstring() + L" from z\\assetsfb.zip does not compile: " + widen(e.what());
-            break;
-        }
-        fs::path compiled = game / relative;
-        compiled += L"b";
-        if (!replace_file(game / relative, text.data(), text.size()) ||
-            !replace_file(compiled, binary.data(), binary.size())) {
-            error = L"Could not replace " + relative.wstring() + L". Is the game running?";
-            break;
-        }
-        ++replaced;
-    }
-    mz_zip_reader_end(&zip);
-    fclose(handle);
-    if (!mods.empty()) {
-        auto applied = apply_mods(game, mods);
-        if (!applied.ok && error.empty()) error = L"Could not put the mods back: " + applied.error;
-    }
-    return replaced;
-}
-
 bool has_install(const fs::path& folder) { return is_game_folder(folder); }
 
 std::wstring check_image(const fs::path& image, uint64_t* bytes_needed)
@@ -286,9 +157,6 @@ bool install_game(const InstallRequest& request, const InstallProgress& progress
     if (!extracted) return false;
     progress(985, L"Arranging sound banks...");
     repair_sounds(request.target, error);
-    if (!error.empty()) return false;
-    progress(988, L"Using the game data the disc's zip ships with...");
-    repair_disc_data(request.target, error);
     if (!error.empty()) return false;
 
     // 3. Check the result has what the release instructions require.

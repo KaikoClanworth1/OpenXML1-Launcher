@@ -2,7 +2,6 @@
 #include <filesystem>
 #include <functional>
 #include <string>
-#include <vector>
 
 // Installs X-Men Legends from the player's own disc image, following the
 // OpenXML1 release instructions step for step:
@@ -37,13 +36,5 @@ bool has_install(const fs::path& folder);
 // silent. repair_sounds folds it into sounds/zsds (see install.cpp).
 bool sounds_need_repair(const fs::path& game);
 unsigned repair_sounds(const fs::path& game, std::wstring& error);
-
-// The disc's loose data/ folder has development leftovers of herostat and
-// stat_rules that win over the shipped copies in z/assetsfb.zip. Their extra
-// costume slots name models the disc lacks, and choosing one ends the game.
-// repair_disc_data puts the shipped versions in place, compiled, keeping any
-// installed mods on top (see install.cpp).
-std::vector<std::wstring> stale_disc_data(const fs::path& game);
-unsigned repair_disc_data(const fs::path& game, std::wstring& error);
 
 }

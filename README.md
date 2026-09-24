@@ -38,17 +38,6 @@ installed as its README describes; see
 The launcher fixes new installs automatically, and offers the fix when it opens
 an affected one.
 
-**Costume crash fix.** The disc has old development copies of
-`data/herostat` (all three languages) and `data/stat_rules.xml` beside the
-versions the game shipped with, which are inside `z/assetsfb.zip`. The Xbox
-reads the zip first, but OpenXML1 prefers loose files and its first-run setup
-keeps them, so the old copies are used. They give heroes extra costumes whose
-models are not on the disc; Wolverine's 4th costume asks for
-`actors/0304.igb`, and the game ends. The launcher puts the shipped versions
-in place on new installs, and offers to on existing ones. It only replaces
-files that match the disc's old copies byte for byte, and keeps installed
-mods.
-
 **Updates.** The launcher checks this repository's releases when it starts, and
 from **Check for updates** on the Play tab. Updating downloads the new exe,
 checks it, swaps it in and restarts. A running game is not affected.
@@ -212,7 +201,6 @@ fragments are ignored.
 - the updater: version comparison, and swapping the exe of a program that is
   still running, including putting it back when the swap fails
 - the 0.9b sound repair
-- the costume data repair leaves files that are not the disc's old copies alone
 - INI editing
 - merge rules
 - a three-mod install with a conflict, switching selections, restoring byte
@@ -226,7 +214,6 @@ Optional arguments test real data:
 - `--game <folder>` merges and compiles a copy of that game's `herostat.eng`.
 - `--image <iso>` reads a real disc image.
 - `--install <iso> <zip> <new folder>` runs a whole installation.
-- `--repair-disc <game>` runs the costume data repair on a real game folder.
 
 **`--capture <dir> --game <folder>`** makes the launcher render its own window
 to one PNG per tab. It draws off screen and never activates, so no desktop

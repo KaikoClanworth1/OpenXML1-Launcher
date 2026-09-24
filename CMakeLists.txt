@@ -46,7 +46,7 @@ target_compile_features(launcher-core PUBLIC cxx_std_17)
 target_compile_options(launcher-core PUBLIC /utf-8)
 target_compile_definitions(launcher-core PUBLIC UNICODE _UNICODE WIN32_LEAN_AND_MEAN NOMINMAX _CRT_SECURE_NO_WARNINGS)
 target_include_directories(launcher-core PUBLIC src "${XML1}/src" PRIVATE "${XML1}/external/dx8-headers")
-target_link_libraries(launcher-core PUBLIC launcher-miniz shell32 ole32 winhttp bcrypt)
+target_link_libraries(launcher-core PUBLIC launcher-miniz shell32 ole32 winhttp)
 
 add_executable(xml1-launcher WIN32 src/main.cpp launcher.rc)
 set_target_properties(xml1-launcher PROPERTIES OUTPUT_NAME "X-Men Legends Launcher")

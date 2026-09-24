@@ -501,18 +501,6 @@ void use_game_folder(const fs::path& folder)
         if (!error.empty()) ask(error, MB_OK | MB_ICONERROR);
         else status(L"Sound fixed: moved " + std::to_wstring(moved) + L" sound bank(s) into sounds\\zsds.");
     }
-    if (g_capture.empty() && !stale_disc_data(g_game).empty() && !game_running(g_game) &&
-        ask(L"Choosing a hero's 4th costume will end the game in this installation.\n\nThe disc has old development "
-            L"copies of data\\herostat and data\\stat_rules beside the versions the game shipped with (in z\\assetsfb.zip), "
-            L"and the old copies are the ones in use. They list costumes whose models are not on the disc. "
-            L"Replace them with the shipped versions? Installed mods are kept.",
-            MB_YESNO | MB_ICONWARNING) == IDYES) {
-        std::wstring error;
-        unsigned replaced = repair_disc_data(g_game, error);
-        if (!error.empty()) ask(error, MB_OK | MB_ICONERROR);
-        else status(L"Costumes fixed: replaced " + std::to_wstring(replaced) + L" file(s) with the disc's shipped versions.");
-        load_mods();
-    }
 }
 
 
