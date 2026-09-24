@@ -454,8 +454,23 @@ void use_game_folder(const fs::path& folder)
 
 // ---- install -----------------------------------------------------------------
 
+// True when the folder holds nothing but this launcher.
+bool only_launcher_in(const fs::path& folder)
+{
+    std::error_code ec;
+    if (!fs::is_directory(folder, ec)) return false;
+    wchar_t self[MAX_PATH * 4];
+    fs::path me = fs::path(std::wstring(self, GetModuleFileNameW(nullptr, self, (DWORD)std::size(self)))).filename();
+    for (const auto& entry : fs::directory_iterator(folder, ec))
+        if (lower(entry.path().filename().wstring()) != lower(me.wstring())) return false;
+    return true;
+}
+
+// Beside the launcher when it was put in a folder of its own, so the game and
+// launcher end up together; otherwise a Games folder.
 fs::path default_install_folder()
 {
+    if (only_launcher_in(launcher_folder())) return launcher_folder();
     wchar_t profile[MAX_PATH] = {};
     GetEnvironmentVariableW(L"USERPROFILE", profile, MAX_PATH);
     return fs::path(profile) / L"Games" / L"X-Men Legends";
@@ -507,7 +522,7 @@ void start_install()
                 L"and settings are kept. Installed mods are taken out first; tick them again afterwards.",
                 MB_YESNO | MB_ICONQUESTION) != IDYES)
             return;
-    } else if (fs::exists(request.target, ec) && !fs::is_empty(request.target, ec)) {
+    } else if (fs::exists(request.target, ec) && !fs::is_empty(request.target, ec) && !only_launcher_in(request.target)) {
         if (ask(L"The folder " + request.target.wstring() + L" is not empty. Install into it anyway?", MB_YESNO | MB_ICONQUESTION) != IDYES)
             return;
     }
