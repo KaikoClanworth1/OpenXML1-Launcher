@@ -169,6 +169,15 @@ mods\<Mod>\append\...    text added to the end of the game's file (scripts, text
 - Everything written is compiled to the binary form the game loads. The
   launcher uses the game's own compiler for this, with a round-trip check.
 
+**Packages.** A fragment under `merge\packages\...
+ame.pkgb` is plain XML text
+inside `<packagedef>`. The game's package (binary XMLB) is decoded, the entries
+merged, and the result compiled back with the same round-trip check. An entry
+the package already has, word for word, is not added twice.
+
+**Placement.** A new entry goes after the game's last entry with the same tag,
+so it sits with its own kind. Map precaches, for example, stay at the top.
+
 **Appending.** A file under `append\` holds only new lines. They are added to
 the end of the game's file of the same path, in that file's own line endings.
 This lets a mod add script commands without shipping a copy of the game's

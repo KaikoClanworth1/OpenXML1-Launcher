@@ -91,6 +91,10 @@ bool language_file(const fs::path& relative)
 
 bool text_data(const fs::path& relative) { return xml1::xml_text_extension(relative.extension().u8string()); }
 
+// PKGB packages are the same binary XML (XMLB) as the compiled data, so they
+// can be merged through their decoded text and compiled back.
+bool package(const fs::path& relative) { return lower(relative.extension().wstring()) == L".pkgb"; }
+
 fs::path binary_of(const fs::path& relative) { fs::path b = relative; b += L"b"; return b; }
 
 void write_atomic(const fs::path& target, const std::string& bytes)
@@ -433,18 +437,37 @@ bool merge_xml(const std::string& base, const std::string& fragment, std::string
             for (auto& added : appended)
                 if (!done && same(added.first.tag, entry.tag) && same(added.first.name, entry.name)) { added.second = text; done = true; }
         }
+        if (!done && entry.name.empty())
+            for (const auto& existing : b.entries)
+                if (same(existing.tag, entry.tag) && same(base.substr(existing.begin, existing.end - existing.begin), text)) {
+                    done = true;  // already there, word for word
+                    break;
+                }
         if (!done) appended.push_back({entry, text});
+    }
+    // A new entry goes after the game's last entry with the same tag, so it
+    // lands where the game keeps that kind (map precaches sit at the top,
+    // before the entities, and are only honoured there). Otherwise at the end.
+    std::vector<std::vector<std::string>> after(b.entries.size());
+    std::vector<std::string> at_end;
+    for (const auto& added : appended) {
+        size_t last = b.entries.size();
+        for (size_t i = 0; i < b.entries.size(); ++i)
+            if (same(b.entries[i].tag, added.first.tag)) last = i;
+        if (last < b.entries.size()) after[last].push_back(added.second);
+        else at_end.push_back(added.second);
     }
     out.clear();
     size_t cursor = 0;
     for (size_t i = 0; i < b.entries.size(); ++i) {
         out.append(base, cursor, b.entries[i].begin - cursor);
         out += has[i] ? replaced[i] : base.substr(b.entries[i].begin, b.entries[i].end - b.entries[i].begin);
+        for (const auto& text : after[i]) { out += newline; out += text; }
         cursor = b.entries[i].end;
     }
     out.append(base, cursor, b.content_end - cursor);
-    if (!appended.empty() && !out.empty() && out.back() != '\n') out += newline;
-    for (const auto& added : appended) { out += added.second; out += newline; }
+    if (!at_end.empty() && !out.empty() && out.back() != '\n') out += newline;
+    for (const auto& text : at_end) { out += text; out += newline; }
     out.append(base, b.content_end, std::string::npos);
     // Attributes on the fragment's root set the same attributes on the game's
     // root; the root tag is unchanged in `out` up to this point.
@@ -489,7 +512,7 @@ std::vector<ModInfo> find_mods(const fs::path& game)
         for (const auto& relative : merges) {
             if (!mod.problem.empty()) break;
             auto why = unsafe_path(relative);
-            if (why.empty() && !text_data(relative)) why = L"only XML data can be merged";
+            if (why.empty() && !text_data(relative) && !package(relative)) why = L"only XML data and packages can be merged";
             if (why.empty() && !fs::exists(game / relative)) why = L"the game has no such file to merge into";
             if (!why.empty()) mod.problem = L"merge\\" + relative.wstring() + L": " + why;
         }
@@ -549,6 +572,11 @@ ApplyResult apply_mods(const fs::path& game, const std::vector<std::wstring>& en
             auto why = unsafe_path(relative);
             if (!why.empty()) throw std::runtime_error(relative.u8string() + ": " + narrow(why));
             std::string text = read_bytes(game / relative);
+            const bool binary = package(relative);
+            if (binary) {
+                try { text = xml1::decode_xmlb(text.data(), (unsigned)text.size()); }
+                catch (const std::exception& e) { throw std::runtime_error(relative.u8string() + " is not a readable package: " + e.what()); }
+            }
             for (const auto& fragment : fragments) {
                 std::string out, error;
                 if (!merge_xml(text, read_bytes(fragment), out, error))
@@ -556,8 +584,20 @@ ApplyResult apply_mods(const fs::path& game, const std::vector<std::wstring>& en
                 text.swap(out);
             }
             ledger.touch(relative);
-            write_atomic(game / relative, text);
-            merged.insert(key);
+            if (binary) {
+                xml1::BinaryXml compiled;
+                try {
+                    compiled = xml1::compile_xmlb(text);
+                    if (xml1::compile_xmlb(xml1::decode_xmlb(compiled.data(), (unsigned)compiled.size())) != compiled)
+                        throw std::runtime_error("round-trip check failed");
+                } catch (const std::exception& e) {
+                    throw std::runtime_error(relative.u8string() + " does not compile: " + e.what());
+                }
+                write_atomic(game / relative, std::string(compiled.begin(), compiled.end()));
+            } else {
+                write_atomic(game / relative, text);
+                merged.insert(key);
+            }
             ++result.written;
         }
         for (const auto& [key, additions] : plan.appends) {

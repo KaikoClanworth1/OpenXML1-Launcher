@@ -95,6 +95,12 @@ static void merge_test()
     CHECK(contains(out, "maxheros=\"4\"") && contains(out, "minheros=\"2\"") && contains(out, "descname=\"Alison in NYC\""));
     CHECK(contains(out, " teamselect=\"true\">") && contains(out, "<REQUIREDHERO name=\"wolverine\"/>"));
     CHECK(!contains(out, "maxheros=\"2\""));
+
+    // A new entry goes after the game's last entry of its tag, not at the end.
+    std::string map = "<world>\n<precache type=\"dialog\" filename=\"tut1\"/>\n<entity name=\"null\"/>\n</world>\n";
+    CHECK(merge_xml(map, "<world>\n<precache type=\"model\" filename=\"Hud/hud_head_0501\"/>\n<entity name=\"beacon\"/>\n</world>\n", out, error));
+    CHECK(out == "<world>\n<precache type=\"dialog\" filename=\"tut1\"/>\n<precache type=\"model\" filename=\"Hud/hud_head_0501\"/>\n"
+                 "<entity name=\"null\"/>\n<entity name=\"beacon\"/>\n</world>\n");
 }
 
 static void install_test(const fs::path& game)
@@ -154,6 +160,25 @@ static void install_test(const fs::path& game)
     CHECK(read(game / L"textures/a.png") == "from C");
     CHECK(read(game / L"actors/9901.igb") == "model");
     CHECK(installed_mods(game) == all);
+
+    // Merging into a package (binary XMLB), with a line it already has skipped.
+    {
+        auto package = xml1::compile_xmlb("<packagedef>\n<model filename=\"hud/hud_head_0301\"/>\n<script filename=\"scripts/test\"/>\n</packagedef>\n");
+        write(game / L"packages/test.pkgb", std::string(package.begin(), package.end()));
+        write(mods / L"Pack/merge/packages/test.pkgb", "<packagedef>\n<model filename=\"hud/hud_head_0301\"/>\n<model filename=\"hud/hud_head_0501\"/>\n</packagedef>\n");
+        result = apply_mods(game, {L"Pack"});
+        CHECK(result.ok);
+        if (!result.ok) std::printf("  %ls\n", result.error.c_str());
+        std::string merged = read(game / L"packages/test.pkgb");
+        std::string text = xml1::decode_xmlb(merged.data(), (unsigned)merged.size());
+        CHECK(contains(text, "hud_head_0501") && contains(text, "scripts/test"));
+        CHECK(text.find("hud_head_0301") == text.rfind("hud_head_0301"));  // not added twice
+        result = apply_mods(game, {});
+        CHECK(result.ok && read(game / L"packages/test.pkgb") == std::string(package.begin(), package.end()));
+        fs::remove(game / L"packages/test.pkgb");
+        fs::remove_all(mods / L"Pack");
+        fs::remove_all(game / L"packages");
+    }
 
     // Appending, then taking it out again.
     result = apply_mods(game, {L"Lines"});

@@ -1,4 +1,6 @@
 <MISSION maxheros="4">
-<REQUIREDHERO name="storm"/>
-<REQUIREDHERO name="phoenix"/>
+<RECOMMENDEDHERO name="storm"/>
+<RECOMMENDEDHERO name="phoenix"/>
+<RECOMMENDEDHERO name="beast"/>
+<RECOMMENDEDHERO name="iceman"/>
 </MISSION>
