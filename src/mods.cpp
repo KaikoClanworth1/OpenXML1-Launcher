@@ -353,41 +353,79 @@ struct Plan {
     std::vector<std::wstring> conflicts;
 };
 
-Plan make_plan(const fs::path& game, const std::vector<std::wstring>& enabled)
+std::map<std::wstring, fs::path>& import_folders()
+{
+    static std::map<std::wstring, fs::path> folders;
+    return folders;
+}
+
+void read_imports(const fs::path& mod, ModInfo& info)
+{
+    Ini ini;
+    if (!ini.load(mod / L"mod.ini")) return;
+    for (const auto& [key, value] : ini.section("Import")) {
+        if (lower(widen(key)) == L"game") info.import_game = widen(value);
+        else if (lower(widen(key)) == L"detect") info.import_detect = widen(value);
+        else info.imports.push_back({fs::u8path(key), fs::u8path(value)});
+    }
+}
+
+Plan make_plan(const fs::path& game, const std::vector<std::wstring>& enabled, std::vector<std::wstring>* skipped = nullptr)
 {
     Plan plan;
     for (const auto& folder : enabled) {
         fs::path mod = mods_dir(game) / folder;
-        for (const auto& relative : files_under(mod / L"files")) {
-            auto key = key_of(relative);
-            auto owner = plan.copy_owner.find(key);
-            if (owner != plan.copy_owner.end() && owner->second != folder)
-                plan.conflicts.push_back(relative.wstring() + L": " + owner->second + L", then " + folder + L" (" + folder + L" wins)");
-            plan.copy_owner[key] = folder;
-            plan.copies[key] = {relative, (mod / L"files" / relative).wstring()};
-        }
-        auto fragments = fragments_under(mod / L"merge");
-        for (const auto& relative : fragments) {
-            auto add = [&](const fs::path& target) {
-                auto key = key_of(target);
-                plan.merge_targets[key] = target;
-                plan.merges[key].push_back(mod / L"merge" / relative);
-            };
-            add(relative);
-            // An English-only fragment also goes into the other languages the
-            // game has, so a new character appears whatever the text language.
-            if (lower(relative.extension().wstring()) != L".eng") continue;
-            for (auto language : kLanguages) {
-                fs::path other = relative; other.replace_extension(language);
-                if (other == relative) continue;
-                bool own = std::any_of(fragments.begin(), fragments.end(), [&](const fs::path& f) { return key_of(f) == key_of(other); });
-                if (!own && fs::exists(game / other)) add(other);
+        ModInfo info;
+        read_imports(mod, info);
+        fs::path other = info.import_game.empty() ? fs::path() : import_folder(info.import_game);
+        bool all_imported = !info.imports.empty();
+        for (const auto& [source, target] : info.imports) {
+            std::error_code ec;
+            if (other.empty() || !fs::is_regular_file(other / source, ec)) {
+                if (skipped) skipped->push_back(info.import_game + L": " + source.wstring());
+                all_imported = false;
+                continue;
             }
+            auto key = key_of(target);
+            plan.copy_owner[key] = folder;
+            plan.copies[key] = {target, (other / source).wstring()};
         }
-        for (const auto& relative : files_under(mod / L"append")) {
-            auto key = key_of(relative);
-            plan.append_targets[key] = relative;
-            plan.appends[key].push_back(mod / L"append" / relative);
+        // with-imports\ holds the parts that only make sense once every
+        // imported file is in place (for example, using an imported model).
+        std::vector<fs::path> roots{mod};
+        if (all_imported && fs::is_directory(mod / L"with-imports")) roots.push_back(mod / L"with-imports");
+        for (const fs::path& root : roots) {
+            for (const auto& relative : files_under(root / L"files")) {
+                auto key = key_of(relative);
+                auto owner = plan.copy_owner.find(key);
+                if (owner != plan.copy_owner.end() && owner->second != folder)
+                    plan.conflicts.push_back(relative.wstring() + L": " + owner->second + L", then " + folder + L" (" + folder + L" wins)");
+                plan.copy_owner[key] = folder;
+                plan.copies[key] = {relative, (root / L"files" / relative).wstring()};
+            }
+            auto fragments = fragments_under(root / L"merge");
+            for (const auto& relative : fragments) {
+                auto add = [&](const fs::path& target) {
+                    auto key = key_of(target);
+                    plan.merge_targets[key] = target;
+                    plan.merges[key].push_back(root / L"merge" / relative);
+                };
+                add(relative);
+                // An English-only fragment also goes into the other languages the
+                // game has, so a new character appears whatever the text language.
+                if (lower(relative.extension().wstring()) != L".eng") continue;
+                for (auto language : kLanguages) {
+                    fs::path other = relative; other.replace_extension(language);
+                    if (other == relative) continue;
+                    bool own = std::any_of(fragments.begin(), fragments.end(), [&](const fs::path& f) { return key_of(f) == key_of(other); });
+                    if (!own && fs::exists(game / other)) add(other);
+                }
+            }
+            for (const auto& relative : files_under(root / L"append")) {
+                auto key = key_of(relative);
+                plan.append_targets[key] = relative;
+                plan.appends[key].push_back(root / L"append" / relative);
+            }
         }
     }
     return plan;
@@ -419,6 +457,13 @@ std::string append_text(std::string text, std::string addition)
 } // namespace
 
 fs::path mods_dir(const fs::path& game) { return game / L"mods"; }
+
+void set_import_folder(const std::wstring& game, const fs::path& folder) { import_folders()[lower(game)] = folder; }
+fs::path import_folder(const std::wstring& game)
+{
+    auto it = import_folders().find(lower(game));
+    return it == import_folders().end() ? fs::path() : it->second;
+}
 
 bool merge_xml(const std::string& base, const std::string& fragment, std::string& out, std::string& error)
 {
@@ -539,6 +584,12 @@ std::vector<ModInfo> find_mods(const fs::path& game)
         }
         auto files = files_under(entry.path() / L"files");
         auto merges = fragments_under(entry.path() / L"merge");
+        read_imports(entry.path(), mod);
+        for (const auto& [source, target] : mod.imports) {
+            auto why = unsafe_path(target);
+            if (why.empty() && mod.import_game.empty()) why = L"[Import] needs Game = the game's name";
+            if (!why.empty()) { mod.problem = L"import " + target.wstring() + L": " + why; break; }
+        }
         auto appends = files_under(entry.path() / L"append");
         mod.files = (unsigned)files.size();
         mod.merges = (unsigned)merges.size();
@@ -561,7 +612,7 @@ std::vector<ModInfo> find_mods(const fs::path& game)
             if (why.empty() && !fs::exists(game / relative)) why = L"the game has no such file to append to";
             if (!why.empty()) mod.problem = L"append\\" + relative.wstring() + L": " + why;
         }
-        if (mod.problem.empty() && !mod.files && !mod.merges && !mod.appends) mod.problem = L"has no files\\, merge\\ or append\\ folder";
+        if (mod.problem.empty() && !mod.files && !mod.merges && !mod.appends && mod.imports.empty()) mod.problem = L"has no files\\, merge\\ or append\\ folder";
         mods.push_back(mod);
     }
     std::sort(mods.begin(), mods.end(), [](const ModInfo& a, const ModInfo& b) { return lower(a.name) < lower(b.name); });
@@ -589,7 +640,7 @@ ApplyResult apply_mods(const fs::path& game, const std::vector<std::wstring>& en
     ApplyResult result;
     if (!restore(game, result.error)) return result;
     if (enabled.empty()) { result.ok = true; return result; }
-    Plan plan = make_plan(game, enabled);
+    Plan plan = make_plan(game, enabled, &result.skipped_imports);
     result.conflicts = plan.conflicts;
     Ledger ledger{game, {}};
     try {
@@ -728,6 +779,9 @@ void ensure_mods_readme(const fs::path& game)
         "added to the end of the game's script in its own line endings.\r\n\r\n"
         "Text data is compiled to the form the game loads (herostat.eng becomes\r\n"
         "herostat.engb) automatically.\r\n\r\n"
+        "Files from another game you own: an [Import] section in mod.ini (Game =,\r\n"
+        "Detect = a file in its folder, then source = target lines). The launcher\r\n"
+        "asks where that game is. with-imports\\ is used only when they were found.\r\n\r\n"
         "Two mods that replace the same file under files\\ conflict: the one lower in\r\n"
         "the list wins, and the launcher tells you which files are affected.\r\n";
 }

@@ -91,6 +91,20 @@ Ini::Found Ini::find(const std::string& section, const std::string& key) const
     return found;
 }
 
+std::vector<std::pair<std::string, std::string>> Ini::section(const std::string& name) const
+{
+    std::vector<std::pair<std::string, std::string>> out;
+    bool inside = false;
+    for (const auto& raw : lines_) {
+        std::string line = trim(raw);
+        if (!line.empty() && line.front() == '[' && line.back() == ']') { inside = iequal(trim(line.substr(1, line.size() - 2)), name); continue; }
+        if (!inside || line.empty() || line[0] == ';' || line[0] == '#') continue;
+        auto eq = line.find('=');
+        if (eq != std::string::npos) out.push_back({trim(line.substr(0, eq)), strip_comment(line.substr(eq + 1))});
+    }
+    return out;
+}
+
 bool Ini::has(const std::string& section, const std::string& key) const { return find(section, key).line >= 0; }
 
 std::string Ini::get(const std::string& section, const std::string& key) const

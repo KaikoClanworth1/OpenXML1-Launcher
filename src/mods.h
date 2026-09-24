@@ -26,13 +26,24 @@ struct ModInfo {
     bool character = false;    // Type = character
     unsigned files = 0, merges = 0, appends = 0;
     std::wstring problem;      // non-empty: the mod cannot be installed
+    // [Import]: files taken from the player's own install of another game
+    // (Game = its name, Detect = a file that identifies its folder), each as
+    // "source path in that game = target path in this one".
+    std::wstring import_game, import_detect;
+    std::vector<std::pair<fs::path, fs::path>> imports;
 };
+
+// Where the player's install of another game is, by the name a mod gives it.
+// Imports from a game with no known folder are skipped.
+void set_import_folder(const std::wstring& game, const fs::path& folder);
+fs::path import_folder(const std::wstring& game);
 
 struct ApplyResult {
     bool ok = false;
     std::wstring error;
     std::vector<std::wstring> conflicts;  // "path: A, then B (B wins)"
     unsigned written = 0;
+    std::vector<std::wstring> skipped_imports;  // "Game: path" not copied
 };
 
 fs::path mods_dir(const fs::path& game);

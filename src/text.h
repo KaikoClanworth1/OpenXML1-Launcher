@@ -20,6 +20,8 @@ public:
     bool has(const std::string& section, const std::string& key) const;
     void set(const std::string& section, const std::string& key, const std::string& value);
     bool save(const std::filesystem::path& path) const;  // atomic replace
+    // Every key = value line of a section, in file order.
+    std::vector<std::pair<std::string, std::string>> section(const std::string& name) const;
 private:
     struct Found { int line = -1; int section_end = -1; bool section = false; };
     Found find(const std::string& section, const std::string& key) const;

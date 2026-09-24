@@ -1,8 +1,8 @@
 <characters>
-<stats name="Magneto" charactername="Magneto" skin="2501" sounddir="magnet_m" powerstyle="ps_magnetohero" characteranims="25_magneto" level="1" strength="3" speed="4" body="4" mind="7" team="hero" RatingMelee="0.3" RatingRanged="0.5" RatingSupport="0.1" RatingDurability="0.4" scriptlevel="3" ailevel="2" canSeeStealthed="true" playable="true">
+<stats name="Magneto" charactername="Magneto" skin="2501" sounddir="magnet_m" powerstyle="ps_magnetohero" characteranims="25_magneto_menu" level="1" strength="3" speed="4" body="4" mind="7" team="hero" RatingMelee="0.3" RatingRanged="0.5" RatingSupport="0.1" RatingDurability="0.4" scriptlevel="3" ailevel="2" canSeeStealthed="true" playable="true">
 <BoltOn slot="ebolton_cape" bolt="Bip01 Spine2" model="9901" anim="99_cape"/>
 <Race name="Mutant"/>
-<Talent name="magneto_bolt" level="1" descname="Magnetic Bolt" description="Hurls a beam of magnetic force at an enemy." icon="6" power="0">
+<Talent name="magneto_bolt" level="1" descname="Magnetic Bolt" description="Hurls a beam of magnetic force at an enemy." icon_texture="textures/ui/magneto_icons1.png" icon="6" power="0">
 <level description="^L2 Magnetic Damage. ^P1 Energy."/>
 <level description="^L3 Magnetic Damage. ^P1+ Energy.">
 <require cat="level" level="3"/>
@@ -17,7 +17,7 @@
 <require cat="level" level="9"/>
 </level>
 </Talent>
-<Talent name="magneto_crush" level="0" descname="Magnetic Crush" description="Two beams of crushing magnetic force." icon="1" power="1">
+<Talent name="magneto_crush" level="0" descname="Magnetic Crush" description="Two beams of crushing magnetic force." icon_texture="textures/ui/magneto_icons1.png" icon="1" power="1">
 <level description="^L3 Magnetic Damage. ^P1 Energy."/>
 <level description="^L4 Magnetic Damage. ^P1+ Energy.">
 <require cat="level" level="3"/>

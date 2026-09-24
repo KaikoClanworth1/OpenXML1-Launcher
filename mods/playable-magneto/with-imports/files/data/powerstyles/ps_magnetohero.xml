@@ -1,4 +1,4 @@
-<PowerStyle CanSteal="true" exclusive="magneto">
+<PowerStyle IconFile="textures/ui/magneto_icons1.png" IconColumns="4" IconRows="4" CanSteal="true" exclusive="magneto">
 <FightMove Name="magbolt1" lockangles="true" animenum="ea_power1" priority="5" aitype="projectile" aireusetime="5" icon="6" comboTextStarter="Magnetic" comboTextFinisher="Bolt">
 <require cat="skill" item="magneto_bolt" level="1"/>
 <trigger time="0" name="effect" effect="powers/magneto_pow1_charge" bolt="Bip01 L Hand"/>

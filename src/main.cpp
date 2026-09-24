@@ -338,6 +338,11 @@ void load_mods()
     ensure_mods_readme(g_game);
     // Mods that ship with the launcher appear in the list like any other.
     auto refreshed = install_bundled_mods(g_game);
+    for (const auto& mod : find_mods(g_game))
+        if (!mod.import_game.empty()) {
+            fs::path known = fs::u8path(preference(("Import." + narrow(mod.import_game)).c_str()));
+            if (!known.empty()) set_import_folder(mod.import_game, known);
+        }
     auto previously = installed_mods(g_game);
     g_mods = find_mods(g_game);
     auto installed = installed_mods(g_game);
@@ -376,6 +381,40 @@ void load_mods()
     }
 }
 
+fs::path pick(bool folder, const wchar_t* title, const COMDLG_FILTERSPEC* filters, UINT filter_count);
+
+// Mods can take files from the player's own copy of another game ([Import]
+// in mod.ini). Its folder is remembered; a ticked mod whose game has not been
+// located yet asks once. Declining installs the mod without those files.
+void locate_import_games(const std::vector<std::wstring>& want)
+{
+    for (const auto& mod : g_mods) {
+        if (mod.imports.empty() || mod.import_game.empty()) continue;
+        if (std::find(want.begin(), want.end(), mod.folder) == want.end()) continue;
+        const std::string key = "Import." + narrow(mod.import_game);
+        fs::path known = fs::u8path(preference(key.c_str()));
+        auto usable = [&](const fs::path& folder) {
+            std::error_code ec;
+            return !folder.empty() && (mod.import_detect.empty() || fs::is_regular_file(folder / mod.import_detect, ec));
+        };
+        if (usable(known)) { set_import_folder(mod.import_game, known); continue; }
+        if (!import_folder(mod.import_game).empty()) continue;  // located earlier in this session
+        std::wstring text = mod.name + L" can use " + std::to_wstring(mod.imports.size()) + L" file(s) from your own copy of " +
+                            mod.import_game + L". Show the launcher where it is installed?\n\nChoose No to install the mod without them.";
+        if (ask(text, MB_YESNO | MB_ICONQUESTION) != IDYES) continue;
+        for (;;) {
+            fs::path folder = pick(true, (L"Choose the folder where " + mod.import_game + L" is installed").c_str(), nullptr, 0);
+            if (folder.empty()) break;
+            if (usable(folder)) {
+                set_import_folder(mod.import_game, folder);
+                set_preference(key.c_str(), folder.u8string());
+                break;
+            }
+            ask(L"That folder does not contain " + mod.import_detect + L".", MB_OK | MB_ICONWARNING);
+        }
+    }
+}
+
 bool apply_selected_mods(bool only_if_changed)
 {
     if (g_game.empty()) return false;
@@ -395,6 +434,7 @@ bool apply_selected_mods(bool only_if_changed)
     }
     status(L"Installing mods...");
     SetCursor(LoadCursorW(nullptr, IDC_WAIT));
+    locate_import_games(want);
     auto result = apply_mods(g_game, want);
     SetCursor(LoadCursorW(nullptr, IDC_ARROW));
     if (!result.ok) {
@@ -404,6 +444,9 @@ bool apply_selected_mods(bool only_if_changed)
         return false;
     }
     status(want.empty() ? L"The game's original files are in place." : L"Installed " + std::to_wstring(want.size()) + L" mod(s).");
+    if (!result.skipped_imports.empty())
+        status(L"Installed " + std::to_wstring(want.size()) + L" mod(s), without " + std::to_wstring(result.skipped_imports.size()) +
+               L" file(s) from another game. Tick the mod again to locate that game.");
     mods_status();
     return true;
 }
@@ -453,7 +496,7 @@ void game_exited(DWORD code)
 // ---- folder ----------------------------------------------------------------
 
 // A folder (pick_folder) or file (pick_file) chosen in the standard dialog.
-fs::path pick(bool folder, const wchar_t* title, const COMDLG_FILTERSPEC* filters = nullptr, UINT filter_count = 0)
+fs::path pick(bool folder, const wchar_t* title, const COMDLG_FILTERSPEC* filters, UINT filter_count)
 {
     fs::path chosen;
     IFileOpenDialog* dialog = nullptr;
@@ -477,7 +520,7 @@ fs::path pick(bool folder, const wchar_t* title, const COMDLG_FILTERSPEC* filter
 fs::path pick_game_folder()
 {
     for (;;) {
-        fs::path folder = pick(true, L"Choose the folder that holds X-Men Legends.exe and default.xbe");
+        fs::path folder = pick(true, L"Choose the folder that holds X-Men Legends.exe and default.xbe", nullptr, 0);
         if (folder.empty() || is_game_folder(folder)) return folder;
         ask(L"That folder does not have both X-Men Legends.exe and default.xbe in it. "
             L"To set the game up from your disc image, use the Install tab.", MB_OK | MB_ICONWARNING);
@@ -901,7 +944,7 @@ void command(int id, int code)
         break;
     }
     case IDC_BROWSE_TARGET: {
-        fs::path folder = pick(true, L"Choose where to install X-Men Legends");
+        fs::path folder = pick(true, L"Choose where to install X-Men Legends", nullptr, 0);
         if (!folder.empty()) SetWindowTextW(item(IDC_TARGET), folder.c_str());
         break;
     }

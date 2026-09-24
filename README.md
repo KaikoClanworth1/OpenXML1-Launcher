@@ -183,6 +183,12 @@ both. It is the first mod, tested in the game.
 **New packages as text.** A `.pkgb` under `files\` written as XML text
 (`<packagedef>`) is compiled to the binary form on install.
 
+**Files from another game.** A `[Import]` section in `mod.ini` names another game (`Game`), a file that
+identifies its folder (`Detect`), and `source = target` lines. The files are copied from the player's own
+install. The launcher asks for the folder the first time and remembers it. Without that game, the
+imports are skipped and the rest of the mod still installs. Anything under `with-imports\` (its own
+`files`, `merge` and `append`) is used only when every import was found.
+
 **Template character.** [`mods/playable-magneto`](mods/playable-magneto) adds a new
 playable hero, and its README explains every file a character needs.
 

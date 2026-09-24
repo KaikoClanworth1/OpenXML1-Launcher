@@ -207,6 +207,26 @@ static void install_test(const fs::path& game)
         fs::remove_all(game / L"packages");
     }
 
+    // [Import]: files from the player's own copy of another game.
+    {
+        fs::path other = game.parent_path() / L"other-game";
+        write(other / L"Other.exe", "exe");
+        write(other / L"ui/portrait.igb", "portrait bytes");
+        write(mods / L"Imp/mod.ini", "[Mod]\nName = Imp\n\n[Import]\nGame = Other Game\nDetect = Other.exe\nui/portrait.igb = ui/models/characters/9999.igb\n");
+        auto listed = find_mods(game);
+        auto imp = std::find_if(listed.begin(), listed.end(), [](const ModInfo& m) { return m.folder == L"Imp"; });
+        CHECK(imp != listed.end() && imp->problem.empty() && imp->imports.size() == 1 && imp->import_game == L"Other Game");
+        result = apply_mods(game, {L"Imp"});  // game not located: skipped, still installs
+        CHECK(result.ok && result.skipped_imports.size() == 1 && !fs::exists(game / L"ui/models/characters/9999.igb"));
+        set_import_folder(L"other game", other);
+        result = apply_mods(game, {L"Imp"});
+        CHECK(result.ok && result.skipped_imports.empty() && read(game / L"ui/models/characters/9999.igb") == "portrait bytes");
+        result = apply_mods(game, {});
+        CHECK(result.ok && !fs::exists(game / L"ui/models/characters/9999.igb"));
+        fs::remove_all(mods / L"Imp");
+        fs::remove_all(game / L"ui");
+    }
+
     // Appending, then taking it out again.
     result = apply_mods(game, {L"Lines"});
     CHECK(result.ok);
@@ -447,6 +467,19 @@ int main(int argc, char** argv)
         if (arg == "--game" && i + 1 < argc) real_data_test(fs::u8path(argv[++i]), scratch);
         else if (arg == "--image" && i + 1 < argc) image_test(fs::u8path(argv[++i]));
         else if (arg == "--release-check" && i + 1 < argc) release_check(scratch, fs::u8path(argv[++i]));
+        else if (arg == "--decode" && i + 1 < argc) {
+            // --decode <file>: print a compiled XML file (.xmlb, .engb, .pkgb) as text.
+            std::string bytes = read(fs::u8path(argv[++i]));
+            std::fwrite(xml1::decode_xmlb(bytes.data(), (unsigned)bytes.size()).c_str(), 1, 0, stdout);
+            std::string text = xml1::decode_xmlb(bytes.data(), (unsigned)bytes.size());
+            std::fwrite(text.data(), 1, text.size(), stdout);
+            return 0;
+        }
+        else if (arg == "--import-folder" && i + 2 < argc) {
+            // --import-folder <game name> <folder>: where another game is, for [Import].
+            set_import_folder(widen(argv[i + 1]), fs::u8path(argv[i + 2]));
+            i += 2;
+        }
         else if (arg == "--apply" && i + 1 < argc) {
             // --apply <game folder> [mod folder names...]: the launcher's own
             // mod install, on a real game folder. No names restores the game.
@@ -459,6 +492,7 @@ int main(int argc, char** argv)
             auto result = apply_mods(game, mods);
             CHECK(result.ok);
             std::printf("applied %zu mod(s): %s %ls\n", mods.size(), result.ok ? "ok" : "FAILED", result.error.c_str());
+            for (const auto& skipped : result.skipped_imports) std::printf("skipped import %ls\n", skipped.c_str());
         }
         else if (arg == "--install" && i + 3 < argc) {
             full_install_test(fs::u8path(argv[i + 1]), fs::u8path(argv[i + 2]), fs::u8path(argv[i + 3]));
