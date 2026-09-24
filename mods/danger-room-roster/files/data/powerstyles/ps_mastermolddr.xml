@@ -1,0 +1,164 @@
+<PowerStyle CanSteal="false">
+<FightMove name="idle" animenum="ea_idle1" lockchaining="false" handler="ch_idle" turnrate="0.4" noncombat="true">
+<chain action="walk" result="walk"/>
+<chain action="jog" result="walk"/>
+<chain action="run" result="walk"/>
+<chain action="attack" result="swipe_punch"/>
+<chain action="smash" result="smash_punch"/>
+<chain action="powers" result="powers"/>
+<chain action="spinright" result="spinright"/>
+<chain action="spinleft" result="spinleft"/>
+</FightMove>
+<FightMove name="walk" animenum="ea_walk1" lockchaining="false" turnrate="0.3" noncombat="true" handler="ch_move">
+<trigger animbased="true" time="0" name="sound" sound="character/master_m/move"/>
+<trigger animbased="true" time="0.25" name="footstep" sound="character/master_m/footstep"/>
+<trigger animbased="true" time="0.5" name="sound" sound="character/master_m/move"/>
+<trigger animbased="true" time="0.75" name="footstep" sound="character/master_m/footstep"/>
+<chain action="idle" result="idle"/>
+<chain action="walk" result="walk"/>
+<chain action="jog" result="walk"/>
+<chain action="run" result="walk"/>
+<chain action="powers" result="powers"/>
+<chain action="attack" result="swipe_punch"/>
+<chain action="smash" result="smash_punch"/>
+<chain action="spinright" result="spinright"/>
+<chain action="spinleft" result="spinleft"/>
+</FightMove>
+<FightMove name="spinleft" animenum="ea_spin_left" lockchaining="false" noncombat="true" turnrate="0.125" handler="ch_spin">
+<trigger animbased="true" time="0.25" name="footstep" volume="0.25"/>
+<trigger animbased="true" time="0.75" name="footstep" volume="0.25"/>
+<chain action="idle" result="idle"/>
+<chain action="walk" result="walk"/>
+<chain action="jog" result="walk"/>
+<chain action="run" result="walk"/>
+<chain action="powers" result="powers"/>
+<chain action="attack" result="swipe_punch"/>
+<chain action="smash" result="smash_punch"/>
+<chain action="spinright" result="spinright"/>
+<chain action="spinleft" result="spinleft"/>
+</FightMove>
+<FightMove name="spinright" animenum="ea_spin_right" lockchaining="false" noncombat="true" turnrate="0.125" handler="ch_spin">
+<trigger animbased="true" time="0.25" name="footstep" volume="0.25"/>
+<trigger animbased="true" time="0.75" name="footstep" volume="0.25"/>
+<chain action="idle" result="idle"/>
+<chain action="walk" result="walk"/>
+<chain action="jog" result="walk"/>
+<chain action="run" result="walk"/>
+<chain action="powers" result="powers"/>
+<chain action="attack" result="swipe_punch"/>
+<chain action="smash" result="smash_punch"/>
+<chain action="spinright" result="spinright"/>
+<chain action="spinleft" result="spinleft"/>
+</FightMove>
+<FightMove Name="swipe_punch" animenum="ea_power4" lockangles="true" aitype="melee" aireusetime="2">
+<event name="master_punch" inherit="punch" damage="L3" knockback="K5" height="60" arc="45">
+<damageMod name="dmgmod_auto_knockback"/>
+</event>
+<trigger time="0.08" name="sound" sound="character/master_m/move"/>
+<trigger time="0.15" name="footstep" foot="right" sound="character/master_m/footstep"/>
+<trigger time="0.3" name="effect" effect="powers/mold_atk_arc"/>
+<trigger time="0.3" name="sound" sound="character/master_m/swing"/>
+<trigger time="0.37" name="master_punch" angle="40" arc="32" Zverticalrange="16" maxrange="240"/>
+<trigger time="0.38" name="master_punch" angle="-28" arc="32" Zverticalrange="16" maxrange="240"/>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove Name="smash_punch" animenum="ea_power5" lockangles="true" aitype="aoe" aireusetime="5">
+<trigger time="0.1" name="sound" sound="character/master_m/move"/>
+<trigger time="0.4" name="sound" sound="character/master_m/swing"/>
+<trigger time="0.4" name="effect" effect="powers/mold_sma_arc"/>
+<trigger time="0.43" name="footstep" foot="right"/>
+<trigger time="0.44" name="punch" damage="L4" knockback="K5" maxrange="240" Arc="18" Angle="-20">
+<damageMod name="dmgmod_auto_knockback"/>
+</trigger>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove Name="stomp" animenum="ea_power6" lockangles="true" aitype="aoe" aireusetime="5">
+<trigger time="0.1" name="sound" sound="character/master_m/move"/>
+<trigger time="0.45" name="sound" sound="character/master_m/footstep"/>
+<trigger time="0.45" name="effect" effect="powers/mold_stomp"/>
+<trigger time="0.5" name="kick" PowerUsage="P2" AttackType="blast" PowerAttack="true" MaxRange="96" arc="180" knockback="K10" verticalrange="18" height="-84" damage="L5">
+<damageMod name="dmgmod_auto_knockback"/>
+<damageMod name="dmgmod_ground_only"/>
+</trigger>
+<chain action="Idle" result="idle"/>
+</FightMove>
+<FightMove Name="power_attack" animenum="ea_power1" lockangles="true" aireusetime="3" aitype="beam" priority="5">
+<trigger time="-1" tag="1" name="powerup" life="4" powerup="move" level="0" skin="0905" affect_type="scale" effect="powerups/mold_stun" func_activate="immobolizeactivate" func_deactivate="frozendeactivate" bolt="Bip01 Head"/>
+<trigger time="0" name="stop"/>
+<trigger time="0.4" name="sound" sound="character/master_m/power1"/>
+<trigger time="0.45" name="beam" PowerUsage="P2" AttackType="beam" PowerAttack="true" Damage="M1" pitch="45" onlynoenemypitch="true" MaxRange="800" arc="0" victimeventtag="1" spawneffect="powers/mold_s_stunbeam_spawn" beameffect="powers/mold_s_stunbeam" HitEffect="powers/mold_s_stunbeam_hit" beambolt="Bip01 Head"/>
+<chain action="Idle" result="idle"/>
+</FightMove>
+<FightMove Name="power_smash" animenum="ea_power2" lockangles="true" handler="ch_constantbeam" aireusetime="9" aitype="beam" priority="5">
+<trigger time="-1" tag="1" name="powerup" life="4" powerup="move" level="0" skin="0905" affect_type="scale" effect="powerups/mold_stun" func_activate="immobolizeactivate" func_deactivate="frozendeactivate" bolt="Bip01 Head"/>
+<event name="stunbeam" inherit="beam" PowerUsage="0" Damage="L3" victimeventtag="1" MaxRange="800" Arc="0" pitch="30" beameffect="powers/mold_l_stunbeam" HitEffect="powers/mold_l_stunbeam_hit" beambolt="Bip01 Head"/>
+<trigger time="0" name="stop"/>
+<trigger time="0.2" name="sound" sound="character/master_m/power2"/>
+<trigger time="0.38" name="beamdata" type="ce_set_constantbeamdata" setbeam="true"/>
+<trigger time="-1" tag="150" name="stunbeam"/>
+<trigger time="0.7" name="beamdata" type="ce_set_constantbeamdata" setbeam="false"/>
+<chain action="Idle" result="idle"/>
+</FightMove>
+<FightMove Name="power_boost" animenum="ea_power3" lockangles="true" priority="uninterruptable">
+<event name="mm_missile_l" type="ce_atk_spawn_proj" filename="mastermold_ents" entity="mastermold_missile" count="1" center="true" Speed="200" offset="-40 26 18" angoffset="0 -90 0" PowerAttack="true" PowerUsage="P1" AttackType="projectile" DamageType="dmg_physical" Damage="L4+"/>
+<event name="mm_missile_r" type="ce_atk_spawn_proj" filename="mastermold_ents" entity="mastermold_missile" count="1" center="true" Speed="200" offset="-45 -39 18" angoffset="0 -90 0" PowerAttack="true" PowerUsage="P1" AttackType="projectile" DamageType="dmg_physical" Damage="L4+"/>
+<trigger time="0.45" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.45" name="mm_missile_l"/>
+<trigger time="0.55" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.55" name="mm_missile_r"/>
+<trigger time="0.65" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.65" name="mm_missile_l"/>
+<trigger time="0.75" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.75" name="mm_missile_r"/>
+<chain action="Idle" result="idle"/>
+</FightMove>
+<FightMove Name="blaster" animenum="ea_power8" lockangles="true" aireusetime="6" aitype="beam">
+<trigger time="0.3" name="sound" sound="character/master_m/power5"/>
+<chain action="Idle" result="doubleblaster"/>
+</FightMove>
+<FightMove Name="doubleblaster" animenum="ea_power9" lockangles="true" noautoaim="true">
+<event name="handbeam" inherit="beam" PowerUsage="P4" AttackType="beam" PowerAttack="true" Damage="M3" DamageLevel="9" MaxRange="800" arc="0" pierce="true" radius="30" spawneffect="powers/mold_handbeam_spawn" beameffect="powers/mold_handbeam" beambolt="Bip01 R Hand" HitEffect="powers/mold_handbeam_hit"/>
+<trigger time="0" name="effect" effect="powers/mold_handbeam_charge" bolt="Bip01 L Hand"/>
+<trigger time="0" name="effect" effect="powers/mold_handbeam_charge" bolt="Bip01 R Hand"/>
+<trigger time="0.24" name="handbeam" beambolt="Bip01 L Hand"/>
+<trigger time="0.24" name="handbeam" beambolt="Bip01 R Hand"/>
+<chain action="Idle" result="idle"/>
+</FightMove>
+<FightMove Name="power_xtreme" animenum="ea_power10" lockangles="true" aitype="aoe" aireusetime="25">
+<event name="mm_missile_l" type="ce_atk_spawn_proj" filename="mastermold_ents" entity="mastermold_missile" count="1" center="true" Speed="200" offset="-40 26 18" angoffset="0 -90 0" PowerAttack="true" PowerUsage="P1" AttackType="projectile" DamageType="dmg_physical" Damage="L4+"/>
+<event name="mm_missile_r" type="ce_atk_spawn_proj" filename="mastermold_ents" entity="mastermold_missile" count="1" center="true" Speed="200" offset="-45 -39 18" angoffset="0 -90 0" PowerAttack="true" PowerUsage="P1" AttackType="projectile" DamageType="dmg_physical" Damage="L4+"/>
+<trigger time="0.25" name="sound" sound="character/master_m/power4"/>
+<trigger time="0.30" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.30" name="mm_missile_l"/>
+<trigger time="0.38" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.38" name="mm_missile_r"/>
+<trigger time="0.46" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.46" name="mm_missile_l"/>
+<trigger time="0.54" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.54" name="mm_missile_r"/>
+<trigger time="0.62" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.62" name="mm_missile_l"/>
+<trigger time="0.70" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.70" name="mm_missile_r"/>
+<trigger time="0.78" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.78" name="mm_missile_l"/>
+<trigger time="0.86" name="sound" sound="character/master_m/rocket_launch"/>
+<trigger time="0.86" name="mm_missile_r"/>
+<chain action="Idle" result="idle"/>
+</FightMove>
+<FightMove name="shockshield_on" priority="uninterruptable" animenum="ea_power7" lockangles="true">
+<trigger time="0.55" name="effect" effect="powers/mold_shield_charge"/>
+<trigger time="0.13" name="sound" sound="character/master_m/shield"/>
+<trigger time="0.55" tag="1" name="powerup" PowerUsage="P9" skin="5902" affect_type="scale" powerup="def_damage" func_hurt="magnetohurt" effect_cust1="powers/mold_shield_hit" level="0" life="-1" no_stack="true" effect="powers/mold_shield_loop"/>
+<trigger time="0.55" tag="2" name="powerup" powerup="special" life="-1" damagetype="dmg_electric" level="L3" no_stack="true" level_max="L4" func_touch="damagetouch"/>
+<chain action="Idle" result="idle"/>
+</FightMove>
+<FightMove name="shockshield_off" inherit="shockshield_on" animenum="ea_power12">
+<trigger tag="1" life="0.01"/>
+<trigger tag="2" life="0.01"/>
+</FightMove>
+<FightMove name="deathgen" death="true" sequenced="true" animenum="ea_ko_head1">
+<trigger time="0" name="sound" sound="character/master_m/death"/>
+<trigger time="0" name="effect" effect="misc/misc_endboss"/>
+</FightMove>
+</PowerStyle>

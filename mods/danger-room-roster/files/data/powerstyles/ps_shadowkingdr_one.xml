@@ -1,0 +1,76 @@
+<PowerStyle CanSteal="false">
+<FightMove Name="power_attack" animenum="ea_power1" priority="uninterruptable" lockangles="true" handler="ch_grenade" aitype="projectile" aireusetime="5">
+<trigger time="0" name="stop"/>
+<trigger time="0" name="effect" effect="powers/shadow_spearcharge" bolt="Bip01 R Hand"/>
+<trigger time="0" name="effect" effect="powers/shadow_spearthrow"/>
+<trigger time="0" name="sound" sound="character/shdwtn_m/power1a"/>
+<trigger time="0.35" name="bolton" type="ce_bolton" model="models/bolton/shadowking_spear_power1" bolt="Bip01 R Hand" removecurrent="true" boltslot="ebolton_altweapon" attachpoint="Grab1"/>
+<trigger time="0.56" name="removebolton" type="ce_bolton" removebolton="true" boltslot="ebolton_altweapon"/>
+<trigger time="0.56" name="sound" sound="character/shdwtn_m/power1b"/>
+<trigger time="0.57" name="projectile" filename="shadowking_ents" entity="shadow_spear" count="1" actorbolt="Bip01 R Hand" Speed="600" PowerAttack="true" PowerUsage="P3" AttackType="projectile" Damage="L5" DamageType="dmg_bleed" fulltargeting="true" targetable="true">
+<damageMod name="dmgmod_forcepain"/>
+</trigger>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove Name="power_smash" animenum="ea_power4" lockangles="true" handler="ch_grenade" priority="uninterruptable">
+<event name="spear_hit" inherit="punch" AttackType="blast" damage="M3" damagelevel="8" maxrange="168" verticalrange="48" powerattack="true" Arc="45" hiteffect="powers/shadow_spearswipehit">
+<damageMod name="dmgmod_popup"/>
+</event>
+<trigger time="0" name="stop"/>
+<trigger time="0" name="effect" effect="powers/shadow_spearswipe"/>
+<trigger time="0" name="sound" sound="character/shdwtn_m/power2a"/>
+<trigger time="0" name="bolton" boltslot="ebolton_altweapon" model="models/bolton/shadowking_spear_power4" replacecurrent="true" bolt="Bip01 R Hand"/>
+<trigger time="0.4" name="sound" sound="character/shdwtn_m/power2b"/>
+<trigger time="0.4" name="spear_hit" angle="270"/>
+<trigger time="0.42" name="spear_hit" angle="0"/>
+<trigger time="0.45" name="spear_hit" maxrange="192" angle="90"/>
+<trigger time="0.48" name="spear_hit" maxrange="192" angle="180"/>
+<trigger time="0.55" name="spear_hit" maxrange="192" angle="270"/>
+<trigger time="0.58" name="spear_hit" maxrange="192" angle="0"/>
+<trigger time="0.61" name="spear_hit" maxrange="192" angle="90"/>
+<trigger time="0.63" name="spear_hit" arc="30" maxrange="192" angle="165"/>
+<trigger time="0.95" name="removebolton" type="ce_bolton" removebolton="true" boltslot="ebolton_altweapon"/>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove Name="power_boost" animenum="ea_power1" priority="uninterruptable" lockangles="true" handler="ch_grenade" aitype="projectile" aireusetime="8">
+<trigger time="0" name="stop"/>
+<trigger time="0" name="effect" effect="powers/shadow_spearcharge" bolt="Bip01 R Hand"/>
+<trigger time="0" name="effect" effect="powers/shadow_spearthrow"/>
+<trigger time="0" name="sound" sound="character/shdwtn_m/power1a"/>
+<trigger time="0.35" name="bolton" type="ce_bolton" model="models/bolton/shadowking_spear_power1" bolt="Bip01 R Hand" removecurrent="true" boltslot="ebolton_altweapon" attachpoint="Grab1"/>
+<trigger time="0.56" name="removebolton" type="ce_bolton" removebolton="true" boltslot="ebolton_altweapon"/>
+<trigger time="0.56" name="sound" sound="character/shdwtn_m/power1b"/>
+<trigger time="0.57" name="projectile" filename="shadowking_ents" entity="shadow_spear" count="3" Spread="25" actorbolt="Bip01 R Hand" Speed="600" PowerAttack="true" PowerUsage="P5" AttackType="projectile" Damage="L5" DamageType="dmg_bleed" fulltargeting="true" targetable="true">
+<damageMod name="dmgmod_forcepain"/>
+</trigger>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove Name="power_xtreme" animenum="ea_power4" lockangles="true" handler="ch_grenade" priority="uninterruptable">
+<event name="spear_hit" inherit="punch" AttackType="blast" damage="H1" damagelevel="8" maxrange="224" verticalrange="48" powerattack="true" Arc="45" hiteffect="powers/shadow_spearswipehit">
+<damageMod name="dmgmod_popup"/>
+</event>
+<trigger time="0" name="stop"/>
+<trigger time="0" name="effect" effect="powers/shadow_spearswipe"/>
+<trigger time="0" name="sound" sound="character/shdwtn_m/power2a"/>
+<trigger time="0" name="bolton" boltslot="ebolton_altweapon" model="models/bolton/shadowking_spear_power4" replacecurrent="true" bolt="Bip01 R Hand"/>
+<trigger time="0.4" name="sound" sound="character/shdwtn_m/power2b"/>
+<trigger time="0.4" name="spear_hit" angle="270"/>
+<trigger time="0.42" name="spear_hit" angle="0"/>
+<trigger time="0.45" name="spear_hit" maxrange="256" angle="90"/>
+<trigger time="0.48" name="spear_hit" maxrange="256" angle="180"/>
+<trigger time="0.55" name="spear_hit" maxrange="256" angle="270"/>
+<trigger time="0.58" name="spear_hit" maxrange="256" angle="0"/>
+<trigger time="0.61" name="spear_hit" maxrange="256" angle="90"/>
+<trigger time="0.63" name="spear_hit" arc="30" maxrange="256" angle="165"/>
+<trigger time="0.95" name="removebolton" type="ce_bolton" removebolton="true" boltslot="ebolton_altweapon"/>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove Name="shadow_transition" priority="uninterruptable" animenum="ea_idle1" lockangles="true">
+<trigger time="0" name="stop"/>
+<trigger time="0" name="effect" effect="powers/shadow_transition"/>
+<trigger time="0" name="effect" effect="powers/shadow_trans_armorbits" bolt="Bip01 R Forearm"/>
+<trigger time="0" name="effect" effect="powers/shadow_trans_armorbits" bolt="Bip01 Head"/>
+<trigger time="0" name="effect" effect="powers/shadow_trans_shield" bolt="Bip01 L Hand"/>
+<chain action="Idle" result="idle"/>
+</FightMove>
+</PowerStyle>

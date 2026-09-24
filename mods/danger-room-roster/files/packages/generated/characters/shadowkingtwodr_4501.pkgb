@@ -1,0 +1,19 @@
+<packagedef><actorskin filename="4501"/>
+<actoranimdb filename="45_shadowking"/>
+<model filename="hud/hud_head_4501"/>
+<model filename="ui/hud/characters/4501"/>
+<texture filename="textures/clawring1"/>
+<texture filename="textures/clawring3"/>
+<effect filename="powers/shadow_scratch_l"/>
+<effect filename="powers/shadow_scratch_r"/>
+<effect filename="powers/shadow_breath_hit"/>
+<texture filename="textures/glow"/>
+<effect filename="powers/shadow_breath"/>
+<texture filename="textures/twirl"/>
+<effect filename="powers/shadow_summonshades"/>
+<effect filename="powers/shadow_mirrorimage"/>
+<effect filename="powers/shadow_mirrorcharge"/>
+<effect filename="powers/shadow_spawn"/>
+<fightstyle filename="data/powerstyles/ps_shadowkingdr_two"/>
+<fightstyle filename="data/fightstyles/moveset_shadowking"/>
+</packagedef>

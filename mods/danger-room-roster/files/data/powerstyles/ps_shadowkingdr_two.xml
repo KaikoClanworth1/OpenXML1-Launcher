@@ -1,0 +1,70 @@
+<PowerStyle CanSteal="false">
+<FightMove Name="attacklight1" animenum="ea_attack_light2" lockangles="true" startchaintime="0.75" aireusetime="1" aitype="melee">
+<trigger time="0" name="whoosh_heavy"/>
+<trigger time="0.2" name="effect" effect="powers/shadow_scratch_l"/>
+<trigger time="0.42" name="punch" maxrange="56" knockback="0" damagelevel="5"/>
+<chain action="attack" result="attackheavy1"/>
+<chain action="smash" result="attackheavy1"/>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove Name="attackheavy1" animenum="ea_attack_heavy2" lockangles="true" startchaintime="0.75" aireusetime="1" aitype="melee">
+<trigger time="0" name="whoosh_heavy"/>
+<trigger time="0.2" name="effect" effect="powers/shadow_scratch_r"/>
+<chain action="attack" result="attacklight1"/>
+<chain action="smash" result="attacklight1"/>
+<trigger time="0.42" name="punch" maxrange="56" knockback="0" damagelevel="5"/>
+<chain action="idle" result="idle"/>
+</FightMove>
+<event name="breath_dmg" inherit="beam" damage="L3" HitEffect="powers/shadow_breath_hit" damagelevel="1" DamageType="dmg_fire" MaxRange="200" beambolt="Bip01 Neck" beamEffect="powers/shadow_breath" useboltinfo="true" noaimfx="true" pierce="true"/>
+<event name="breath_fx" inherit="effect" effect="powers/shadow_breath" bolt="Bip01 Neck"/>
+<FightMove Name="power_attack" animenum="ea_power5" lockangles="true" handler="ch_constantbeam" aireusetime="4" aitype="beam">
+<trigger time="0" name="stop"/>
+<trigger time="0" name="sound" sound="character/shdwkg_m/power1a"/>
+<trigger time="0.4" name="sound" sound="character/shdwkg_m/power1b"/>
+<trigger time="0.42" name="breath_fx"/>
+<trigger time="0.46" name="breath_dmg"/>
+<trigger time="0.5" name="breath_fx"/>
+<trigger time="0.54" name="breath_dmg"/>
+<trigger time="0.58" name="breath_fx"/>
+<trigger time="0.62" name="breath_dmg"/>
+<trigger time="0.66" name="breath_fx"/>
+<trigger time="0.7" name="breath_dmg"/>
+<trigger time="0.74" name="breath_fx"/>
+<trigger time="0.78" name="breath_dmg"/>
+<chain action="Idle" result="idle"/>
+</FightMove>
+<FightMove Name="power_boost" animenum="ea_power5" lockangles="true" handler="ch_constantbeam" aireusetime="8" aitype="beam">
+<event name="breath_big" inherit="breath_dmg" damage="L5" MaxRange="260"/>
+<trigger time="0" name="stop"/>
+<trigger time="0" name="sound" sound="character/shdwkg_m/power1a"/>
+<trigger time="0.4" name="sound" sound="character/shdwkg_m/power1b"/>
+<trigger time="0.42" name="breath_fx"/>
+<trigger time="0.46" name="breath_big"/>
+<trigger time="0.5" name="breath_fx"/>
+<trigger time="0.54" name="breath_big"/>
+<trigger time="0.58" name="breath_fx"/>
+<trigger time="0.62" name="breath_big"/>
+<trigger time="0.66" name="breath_fx"/>
+<trigger time="0.7" name="breath_big"/>
+<trigger time="0.74" name="breath_fx"/>
+<trigger time="0.78" name="breath_big"/>
+<chain action="Idle" result="idle"/>
+</FightMove>
+<FightMove Name="power_xtreme" animenum="ea_power7" priority="uninterruptable" lockangles="true">
+<event name="mirror_blast" inherit="punch" AttackType="blast" PowerAttack="true" Arc="360" maxrange="260" damage="M4" knockback="K8">
+<damageMod name="dmgmod_auto_knockback"/>
+</event>
+<trigger time="0" name="stop"/>
+<trigger time="0" name="effect" effect="powers/shadow_mirrorimage"/>
+<trigger time="0" name="effect" effect="powers/shadow_mirrorcharge" bolt="Bip01 L Hand"/>
+<trigger time="0" name="effect" effect="powers/shadow_mirrorcharge" bolt="Bip01 R Hand"/>
+<trigger time="0" name="sound" sound="character/shdwkg_m/power4a"/>
+<trigger time="0.44" name="sound" sound="character/shdwkg_m/power4b"/>
+<trigger time="0.46" name="mirror_blast"/>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove Name="spawn_in" nodamage="true" blendtime="0" animenum="ea_power6">
+<trigger time="0" name="effect" effect="powers/shadow_spawn"/>
+<chain action="Idle" result="idle"/>
+</FightMove>
+</PowerStyle>

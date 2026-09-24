@@ -1,0 +1,8 @@
+<packagedef><actorskin filename="5901"/>
+<texture filename="textures/decals/sent_footprint"/>
+<effect filename="misc/mstrmold_step"/>
+<actoranimdb filename="59_master_mold"/>
+<model filename="hud/hud_head_5901"/>
+<model filename="ui/hud/characters/5901"/>
+<model filename="models/bolton/kincaid"/>
+</packagedef>

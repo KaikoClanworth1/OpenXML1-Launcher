@@ -1,0 +1,6 @@
+<packagedef><actorskin filename="4501"/>
+<actoranimdb filename="45_shadowking"/>
+<model filename="hud/hud_head_4501"/>
+<model filename="ui/hud/characters/4501"/>
+<fightstyle filename="data/fightstyles/moveset_shadowking"/>
+</packagedef>
