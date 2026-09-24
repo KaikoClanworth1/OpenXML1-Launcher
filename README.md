@@ -155,6 +155,8 @@ mods\<Mod>\append\...    text added to the end of the game's file (scripts, text
 - Attributes on the fragment's root element set those on the game file's root.
   An example is `<MISSION maxheros="4">` for `data/missions/alison.eng`.
 - An English fragment also goes into the other languages the game has.
+- Everything written is compiled to the binary form the game loads. The
+  launcher uses the game's own compiler for this, with a round-trip check.
 
 **Appending.** A file under `append\` holds only new lines. They are added to
 the end of the game's file of the same path, in that file's own line endings.
@@ -163,8 +165,6 @@ script.
 
 **Example.** [`mods/early-xmen-xtraction`](mods/early-xmen-xtraction) uses
 both. It is the first mod, tested in the game.
-- Everything written is compiled to the binary form the game loads. The
-  launcher uses the game's own compiler for this, with a round-trip check.
 
 **Undoing.** Every file written is recorded, and its original backed up, in
 `mods\.launcher\` first. Any new selection starts from the untouched game.
