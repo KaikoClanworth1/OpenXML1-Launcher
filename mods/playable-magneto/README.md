@@ -86,6 +86,7 @@ the test only, Crush and Shield started at rank 1.
   - the metal prison on an enemy the bolt hits
   - the Xtreme, which needs level 15 and a full Xtreme meter
 - **His walk animation plays at its normal pace** while the glide moves him faster, so his feet may slide.
-- **The TAS costume's pause-menu head** (`hud/hud_head_2502`) is a copy of his regular one. Put your own at
-  `files/hud/hud_head_2502.igb` to replace it.
+- **The TAS costume's second HUD file** (`hud/hud_head_2502`) is a copy of his regular one. Its package needs
+  it, but where the game shows it was not identified. Put your own at `files/hud/hud_head_2502.igb` to
+  replace it.
 - **No flight.** His XML1 model has no flying animations.
