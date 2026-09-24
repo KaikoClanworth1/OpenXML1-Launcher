@@ -208,11 +208,11 @@ std::string tag_name(const std::string& text, size_t at)
     return text.substr(i, j - i);
 }
 
-std::string name_attribute(const std::string& tag)
+std::string attribute_value(const std::string& tag, const std::string& attr)
 {
-    for (size_t at = tag.find("name"); at != std::string::npos; at = tag.find("name", at + 1)) {
+    for (size_t at = tag.find(attr); at != std::string::npos; at = tag.find(attr, at + 1)) {
         if (at == 0 || !isspace((unsigned char)tag[at - 1])) continue;
-        size_t i = at + 4;
+        size_t i = at + attr.size();
         while (i < tag.size() && isspace((unsigned char)tag[i])) ++i;
         if (i >= tag.size() || tag[i] != '=') continue;
         ++i;
@@ -267,7 +267,11 @@ bool parse(const std::string& text, Document& doc, std::string& error)
         } else {
             bool closed = text[end - 2] == '/';
             if (depth == 0) {
-                current = {at, 0, tag_name(text, at), name_attribute(text.substr(at, end - at))};
+                std::string open = text.substr(at, end - at);
+                std::string key = attribute_value(open, "name");
+                // A placed-object group is identified by the entity type it places.
+                if (key.empty() && _stricmp(tag_name(text, at).c_str(), "entinst") == 0) key = attribute_value(open, "type");
+                current = {at, 0, tag_name(text, at), key};
                 if (closed) { current.end = end; doc.entries.push_back(current); }
                 else depth = 1;
             } else if (!closed) {
@@ -424,11 +428,16 @@ bool merge_xml(const std::string& base, const std::string& fragment, std::string
     if (!same(b.root, f.root)) { error = "mod file's root is <" + f.root + ">, the game's is <" + b.root + ">"; return false; }
     const char* newline = base.find("\r\n") != std::string::npos ? "\r\n" : "\n";
     std::vector<std::string> replaced(b.entries.size());
-    std::vector<bool> has(b.entries.size(), false);
+    std::vector<bool> has(b.entries.size(), false), removed(b.entries.size(), false);
     std::vector<std::pair<Entry, std::string>> appended;
     for (const auto& entry : f.entries) {
         std::string text = fragment.substr(entry.begin, entry.end - entry.begin);
         bool done = false;
+        if (attribute_value(text.substr(0, text.find('>') + 1), "mod-remove") == "true") {
+            for (size_t i = 0; i < b.entries.size(); ++i)
+                if (same(b.entries[i].tag, entry.tag) && same(b.entries[i].name, entry.name)) removed[i] = true;
+            continue;
+        }
         if (!entry.name.empty()) {
             for (size_t i = 0; i < b.entries.size() && !done; ++i)
                 if (same(b.entries[i].tag, entry.tag) && same(b.entries[i].name, entry.name)) {
@@ -460,6 +469,15 @@ bool merge_xml(const std::string& base, const std::string& fragment, std::string
     out.clear();
     size_t cursor = 0;
     for (size_t i = 0; i < b.entries.size(); ++i) {
+        if (removed[i]) {
+            // Drop the entry and the line break that ended it.
+            out.append(base, cursor, b.entries[i].begin - cursor);
+            while (!out.empty() && (out.back() == ' ' || out.back() == '\t')) out.pop_back();
+            cursor = b.entries[i].end;
+            if (cursor < base.size() && base[cursor] == '\r') ++cursor;
+            if (cursor < base.size() && base[cursor] == '\n') ++cursor;
+            continue;
+        }
         out.append(base, cursor, b.entries[i].begin - cursor);
         out += has[i] ? replaced[i] : base.substr(b.entries[i].begin, b.entries[i].end - b.entries[i].begin);
         for (const auto& text : after[i]) { out += newline; out += text; }

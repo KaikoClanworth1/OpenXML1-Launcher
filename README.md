@@ -154,6 +154,10 @@ mods\<Mod>\append\...    text added to the end of the game's file (scripts, text
   or is appended.
 - Attributes on the fragment's root element set those on the game file's root.
   An example is `<MISSION maxheros="4">` for `data/missions/alison.eng`.
+- A placed-object group, `<entinst type="...">`, is matched by its type, so a mod can
+  replace a map's list of positions for one entity.
+- An entry with `mod-remove="true"` takes the game's matching entry out, for example
+  `<REQUIREDHERO name="cyclops" mod-remove="true"/>`.
 - An English fragment also goes into the other languages the game has.
 - Everything written is compiled to the binary form the game loads. The
   launcher uses the game's own compiler for this, with a round-trip check.

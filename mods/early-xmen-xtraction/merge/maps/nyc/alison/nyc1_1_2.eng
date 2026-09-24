@@ -1,0 +1,8 @@
+<world>
+<entinst type="player_start01">
+<inst name="player_start01" pos="1781.85 3522.89 0" extents="1763.87 3501.32 0 1799.79 3551.83 83.9544" orient="0 0 -1.5708"/>
+<inst name="player_start01" pos="1836.85 3522.89 0" extents="1818.87 3501.32 0 1854.79 3551.83 83.95" orient="0 0 -1.5708"/>
+<inst name="player_start01" pos="1726.85 3522.89 0" extents="1708.87 3501.32 0 1744.79 3551.83 83.95" orient="0 0 -1.5708"/>
+<inst name="player_start01" pos="1781.85 3582.89 0" extents="1763.87 3561.32 0 1799.79 3611.83 83.95" orient="0 0 -1.5708"/>
+</entinst>
+</world>

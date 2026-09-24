@@ -3,11 +3,10 @@
 <entinst type="xtraction_point">
 <inst name="xtraction_point" pos="1384.2 1458.9 9.6" orient="0 0 -1.13446"/>
 </entinst>
-<entity name="player_start" classname="playerstartent" prevzone="" prevlink="" nocollide="true"/>
-<entinst type="player_start">
-<inst name="player_start" pos="1337.69 1558.58 9.6" orient="0 0 -1.13446"/>
-<inst name="player_start" pos="1383.01 1579.71 9.6" orient="0 0 -1.13446"/>
-<inst name="player_start" pos="1292.37 1537.45 9.6" orient="0 0 -1.13446"/>
-<inst name="player_start" pos="1312.33 1612.96 9.6" orient="0 0 -1.13446"/>
+<entinst type="player_start01">
+<inst name="player_start01" pos="1337.69 1558.58 9.6" extents="1309.17 1531.44 9.6 1363.07 1592.4 93.5544" orient="0 0 -1.13446"/>
+<inst name="player_start01" pos="1387.54 1581.82 9.6" extents="1359.02 1554.68 9.6 1412.92 1615.64 93.55" orient="0 0 -1.13446"/>
+<inst name="player_start01" pos="1287.84 1535.34 9.6" extents="1259.32 1508.2 9.6 1313.22 1569.16 93.55" orient="0 0 -1.13446"/>
+<inst name="player_start01" pos="1312.33 1612.96 9.6" extents="1283.81 1585.82 9.6 1337.71 1646.78 93.55" orient="0 0 -1.13446"/>
 </entinst>
 </world>

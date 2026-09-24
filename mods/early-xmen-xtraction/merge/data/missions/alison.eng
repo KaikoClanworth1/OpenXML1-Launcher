@@ -1,4 +1,8 @@
-<MISSION maxheros="4">
+<MISSION minheros="1" maxheros="4">
+<REQUIREDHERO name="wolverine" mod-remove="true"/>
+<REQUIREDHERO name="cyclops" mod-remove="true"/>
+<RECOMMENDEDHERO name="wolverine"/>
+<RECOMMENDEDHERO name="cyclops"/>
 <RECOMMENDEDHERO name="storm"/>
 <RECOMMENDEDHERO name="phoenix"/>
 <RECOMMENDEDHERO name="beast"/>

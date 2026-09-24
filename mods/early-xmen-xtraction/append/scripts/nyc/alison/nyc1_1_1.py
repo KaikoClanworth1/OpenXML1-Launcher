@@ -4,9 +4,3 @@
     setInCampaign("phoenix", "TRUE")
     setInCampaign("beast", "TRUE")
     setInCampaign("iceman", "TRUE")
-    earlyTeam = getMissionVar("earlyxmenteam" )
-    if earlyTeam == 0
-         setMissionVar("earlyxmenteam", 1 )
-         addHero("cyclops" )
-         addHero("storm" )
-         addHero("phoenix" )

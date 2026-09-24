@@ -96,6 +96,19 @@ static void merge_test()
     CHECK(contains(out, " teamselect=\"true\">") && contains(out, "<REQUIREDHERO name=\"wolverine\"/>"));
     CHECK(!contains(out, "maxheros=\"2\""));
 
+    // Removing an entry, and matching a placed-object group by its type.
+    std::string missionTeam = "<MISSION>\r\n<REQUIREDHERO name=\"wolverine\"/>\r\n<REQUIREDHERO name=\"cyclops\"/>\r\n<OBJECTIVE name=\"a\"/>\r\n</MISSION>\r\n";
+    CHECK(merge_xml(missionTeam, "<MISSION>\n<REQUIREDHERO name=\"cyclops\" mod-remove=\"true\"/>\n<REQUIREDHERO name=\"WOLVERINE\" mod-remove=\"true\"/>\n<RECOMMENDEDHERO name=\"cyclops\"/>\n</MISSION>\n", out, error));
+    CHECK(out == "<MISSION>\r\n<OBJECTIVE name=\"a\"/>\r\n<RECOMMENDEDHERO name=\"cyclops\"/>\r\n</MISSION>\r\n");
+    std::string starts = "<world>\n<entinst type=\"player_start01\">\n<inst name=\"player_start01\" pos=\"1 2 3\"/>\n</entinst>\n<entinst type=\"car\">\n<inst name=\"car\" pos=\"9 9 9\"/>\n</entinst>\n</world>\n";
+    CHECK(merge_xml(starts, "<world>\n<entinst type=\"player_start01\">\n<inst name=\"player_start01\" pos=\"1 2 3\"/>\n<inst name=\"player_start01\" pos=\"4 5 6\"/>\n</entinst>\n</world>\n", out, error));
+    CHECK(contains(out, "pos=\"4 5 6\"") && contains(out, "pos=\"9 9 9\""));
+    CHECK(out.find("pos=\"1 2 3\"") == out.rfind("pos=\"1 2 3\""));  // replaced, not added beside
+    // Other elements with a type attribute (precaches) are not matched by it.
+    CHECK(merge_xml("<world>\n<precache type=\"model\" filename=\"a\"/>\n</world>\n",
+                    "<world>\n<precache type=\"model\" filename=\"b\"/>\n</world>\n", out, error));
+    CHECK(contains(out, "filename=\"a\"") && contains(out, "filename=\"b\""));
+
     // A new entry goes after the game's last entry of its tag, not at the end.
     std::string map = "<world>\n<precache type=\"dialog\" filename=\"tut1\"/>\n<entity name=\"null\"/>\n</world>\n";
     CHECK(merge_xml(map, "<world>\n<precache type=\"model\" filename=\"Hud/hud_head_0501\"/>\n<entity name=\"beacon\"/>\n</world>\n", out, error));

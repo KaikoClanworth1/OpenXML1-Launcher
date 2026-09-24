@@ -1,0 +1,14 @@
+<world>
+<entinst type="player_start02">
+<inst name="player_start02" pos="-529.535 965.688 -231.412" extents="-556.3 932.337 -231.412 -505.266 992.096 -147.458" orient="0 0 1.22171"/>
+<inst name="player_start02" pos="-581.22 984.5 -231.41" extents="-607.98 951.15 -231.41 -556.95 1010.91 -147.46" orient="0 0 1.22171"/>
+<inst name="player_start02" pos="-477.85 946.88 -231.41" extents="-504.62 913.52 -231.41 -453.58 973.28 -147.46" orient="0 0 1.22171"/>
+<inst name="player_start02" pos="-550.06 909.31 -231.41" extents="-576.82 875.96 -231.41 -525.79 935.71 -147.46" orient="0 0 1.22171"/>
+</entinst>
+<entinst type="player_start01">
+<inst name="player_start01" pos="-480.828 946.085 -231.412" extents="-507.593 912.734 -231.412 -456.558 972.492 -147.458" orient="0 0 1.22171"/>
+<inst name="player_start01" pos="-532.51 964.9 -231.41" extents="-559.28 931.55 -231.41 -508.24 991.3 -147.46" orient="0 0 1.22171"/>
+<inst name="player_start01" pos="-429.15 927.27 -231.41" extents="-455.91 893.92 -231.41 -404.88 953.68 -147.46" orient="0 0 1.22171"/>
+<inst name="player_start01" pos="-501.35 889.7 -231.41" extents="-528.12 856.35 -231.41 -477.08 916.11 -147.46" orient="0 0 1.22171"/>
+</entinst>
+</world>
