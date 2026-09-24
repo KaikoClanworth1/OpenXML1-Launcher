@@ -358,7 +358,7 @@ static void bundled_test(const fs::path& scratch)
     fs::create_directories(game);
     CHECK(!bundled_files().empty());
     auto written = install_bundled_mods(game);
-    CHECK(written.size() == 3 && std::count(written.begin(), written.end(), L"playable-magneto") == 1 && std::count(written.begin(), written.end(), L"early-xmen-xtraction") == 1 &&
+    CHECK(written.size() == 4 && std::count(written.begin(), written.end(), L"level-45") == 1 && std::count(written.begin(), written.end(), L"playable-magneto") == 1 && std::count(written.begin(), written.end(), L"early-xmen-xtraction") == 1 &&
           std::count(written.begin(), written.end(), L"playable-professor-x") == 1);
     fs::path mod = game / L"mods/early-xmen-xtraction";
     CHECK(fs::exists(mod / L"mod.ini") && fs::exists(mod / L"append/scripts/nyc/alison/nyc1_1_1.py"));

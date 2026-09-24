@@ -196,6 +196,9 @@ copy. Uninstalling removes it.
 **Template character.** [`mods/playable-magneto`](mods/playable-magneto) adds a new
 playable hero, and its README explains every file a character needs.
 
+**Script commands.** [`mods/level-45`](mods/level-45) is a single appended line per mission: the
+game's own `awardXPToPlayable`, which puts every hero at the level cap of 45.
+
 **Undoing.** Every file written is recorded, and its original backed up, in
 `mods\.launcher\` first. Any new selection starts from the untouched game.
 Unticking everything restores it byte for byte, and a failed install is rolled
