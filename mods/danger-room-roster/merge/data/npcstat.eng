@@ -1,5 +1,5 @@
 <characters>
-<stats name="MasterMoldDR" charactername="Master Mold" skin="5901" sounddir="master_m" characteranims="59_master_mold" powerstyle="ps_mastermold_one" level="40" strength="60" speed="30" body="80" mind="50" npchealthscale="3" footstepfx="misc/mstrmold_step" large="true" heaviness="4" material="solidmetal" alertradius="400" dangerRating="50" size="53 53 158" team="enemy" pickupthrowchance="0" playable="true" scale_factor="0.55">
+<stats name="MasterMoldDR" charactername="Master Mold" skin="5901" sounddir="master_m" characteranims="59_master_mold" powerstyle="ps_mastermold_one" level="40" strength="60" speed="30" body="80" mind="50" npchealthscale="3" footstepfx="misc/mstrmold_step" large="true" heaviness="4" material="solidmetal" alertradius="400" dangerRating="50" size="53 53 158" team="enemy" pickupthrowchance="0" scale_factor="0.55" playable="true">
 <BoltOn slot="ebolton_weapon" bolt="Bip01 Spine1" model="models/bolton/kincaid"/>
 <Talent name="might" level="3"/>
 <Talent name="mastermold_special" level="1">
@@ -11,5 +11,57 @@
 </level>
 </Talent>
 <Race name="Robot"/>
+</stats>
+<stats name="JuggernautDR" level="28" strength="40" speed="16" body="40" mind="10" playable="true" sounddir="jugger_m" powerstyle="ps_juggernaut" meleetimeroffset="0.8" meleetimerrandomadd="1.2" dangerRating="25" attackrange="150" pickupthrowchance="50" xpaward="40" npchealthscale="13" charactername="Juggernaut (Boss)" skin="3401" characteranims="34_juggernaut" footstepfx="misc/juggstep" large="true" heaviness="4" team="enemy">
+<Multipart bone="Bip01 Head" health="400" effectBone="Bip01 Head" effectOnDeath="explode/JuggernautHelmet" hideSkin="3401_helmet" showSkin="3401_head" startHide="3401_head"/>
+<Talent name="jug_punch" level="1"/>
+<Talent name="jug_slam" level="1"/>
+<Talent name="jug_armor" level="1"/>
+<Talent name="jug_xtreme" level="1"/>
+<Talent name="mental_resistant" level="1"/>
+<Talent name="might" level="3"/>
+<Talent name="juggernaut_special" level="1">
+<level>
+<activepowerup powerup="def_mind_control" level="0.1" affect_type="scale" life="-1"/>
+<activepowerup powerup="def_critical" level="0" affect_type="scale" life="-1"/>
+<activepowerup powerup="def_stun" life="-1" affect_type="scale" level="0"/>
+<activepowerup powerup="def_knockback" life="-1" affect_type="scale" level="0"/>
+</level>
+</Talent>
+<Race name="Mutant"/>
+</stats>
+<stats name="SentinelSpiderDR" charactername="Sentinel Platform Mark II" level="36" strength="50" speed="30" body="80" mind="40" npchealthscale="9" playable="true" skin="5504" powerstyle="ps_sentinel_spider" characteranims="55_sentinelspider" sounddir="sentsp_m" large="true" heaviness="4" material="solidmetal" scale_factor="0.7" size="156 156 120" dangerRating="25" team="enemy">
+<Talent name="might" level="4"/>
+<Race name="Robot"/>
+<Talent name="sentspider_special" level="1">
+<level>
+<activepowerup powerup="def_finisher" life="-1"/>
+</level>
+</Talent>
+<Talent name="mental_resistant" level="1"/>
+</stats>
+<stats name="ShadowKingDR" charactername="Shadow King" skin="4504" characteranims="45_shadowking" powerstyle="ps_shadowking_one" moveset1="moveset_shadowking" sounddir="shdwtn_m" team="enemy" scale_factor="1.5" level="36" strength="40" speed="20" body="50" mind="50" npchealthscale="5" playable="true">
+<BoltOn slot="ebolton_weapon" bolt="Bip01 L Hand" model="models/bolton/shadowking_shield"/>
+<BoltOn model="9401" anim="94_spear" onlyprecache="true"/>
+<Race name="Mutant"/>
+<Talent name="shadow_special" level="1">
+<level>
+<activepowerup powerup="def_stun" life="-1" affect_type="scale" level="0"/>
+<activepowerup powerup="def_pain" level="0" affect_type="scale" life="-1"/>
+<activepowerup powerup="def_finisher" life="-1"/>
+<activepowerup powerup="def_grab" life="-1"/>
+</level>
+</Talent>
+</stats>
+<stats name="ShadowKingTwoDR" charactername="Shadow King (Final Form)" skin="4501" characteranims="45_shadowking" powerstyle="ps_shadowking_two" moveset1="moveset_shadowking" sounddir="shdwkg_m" team="enemy" level="36" strength="40" speed="20" body="50" mind="50" npchealthscale="5" scale_factor="1.5" playable="true">
+<Race name="Mutant"/>
+<Talent name="shadow_special2" level="1">
+<level>
+<activepowerup powerup="def_stun" life="-1" affect_type="scale" level="0"/>
+<activepowerup powerup="def_pain" level="0" affect_type="scale" life="-1"/>
+<activepowerup powerup="def_finisher" life="-1"/>
+<activepowerup powerup="def_grab" life="-1"/>
+</level>
+</Talent>
 </stats>
 </characters>
