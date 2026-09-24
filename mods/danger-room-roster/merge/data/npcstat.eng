@@ -1,0 +1,15 @@
+<characters>
+<stats name="MasterMoldDR" charactername="Master Mold" skin="5901" sounddir="master_m" characteranims="59_master_mold" powerstyle="ps_mastermold_one" level="40" strength="60" speed="30" body="80" mind="50" npchealthscale="3" footstepfx="misc/mstrmold_step" large="true" heaviness="4" material="solidmetal" alertradius="400" dangerRating="50" size="53 53 158" team="enemy" pickupthrowchance="0" playable="true" scale_factor="0.55">
+<BoltOn slot="ebolton_weapon" bolt="Bip01 Spine1" model="models/bolton/kincaid"/>
+<Talent name="might" level="3"/>
+<Talent name="mastermold_special" level="1">
+<level>
+<activepowerup powerup="def_mind_control" level="0.01" affect_type="scale" life="-1"/>
+<activepowerup powerup="def_stun" life="-1" affect_type="scale" level="0"/>
+<activepowerup powerup="def_pain" level="0" affect_type="scale" life="-1"/>
+<activepowerup powerup="def_finisher" life="-1"/>
+</level>
+</Talent>
+<Race name="Robot"/>
+</stats>
+</characters>
