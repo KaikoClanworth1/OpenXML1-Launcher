@@ -600,8 +600,22 @@ ApplyResult apply_mods(const fs::path& game, const std::vector<std::wstring>& en
             if (!why.empty()) throw std::runtime_error(relative.u8string() + ": " + narrow(why));
             ledger.touch(relative);
             fs::create_directories((game / relative).parent_path());
-            if (!CopyFileW(source.c_str(), (game / relative).c_str(), FALSE))
+            std::string bytes = package(relative) ? read_bytes(source) : std::string();
+            size_t first = bytes.find_first_not_of(" \t\r\n\xEF\xBB\xBF");
+            if (first != std::string::npos && bytes[first] == '<') {
+                // A package written as XML text is compiled to the binary form the game reads.
+                xml1::BinaryXml compiled;
+                try {
+                    compiled = xml1::compile_xmlb(bytes);
+                    if (xml1::compile_xmlb(xml1::decode_xmlb(compiled.data(), (unsigned)compiled.size())) != compiled)
+                        throw std::runtime_error("round-trip check failed");
+                } catch (const std::exception& e) {
+                    throw std::runtime_error(relative.u8string() + " does not compile: " + e.what());
+                }
+                write_atomic(game / relative, std::string(compiled.begin(), compiled.end()));
+            } else if (!CopyFileW(source.c_str(), (game / relative).c_str(), FALSE)) {
                 throw std::runtime_error("cannot install " + relative.u8string() + " (is the game running?)");
+            }
             ++result.written;
         }
         std::set<std::wstring> merged;

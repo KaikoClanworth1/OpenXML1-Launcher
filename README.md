@@ -180,6 +180,12 @@ script.
 **Example.** [`mods/early-xmen-xtraction`](mods/early-xmen-xtraction) uses
 both. It is the first mod, tested in the game.
 
+**New packages as text.** A `.pkgb` under `files\` written as XML text
+(`<packagedef>`) is compiled to the binary form on install.
+
+**Template character.** [`mods/playable-magneto`](mods/playable-magneto) adds a new
+playable hero, and its README explains every file a character needs.
+
 **Undoing.** Every file written is recorded, and its original backed up, in
 `mods\.launcher\` first. Any new selection starts from the untouched game.
 Unticking everything restores it byte for byte, and a failed install is rolled

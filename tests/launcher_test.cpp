@@ -193,6 +193,15 @@ static void install_test(const fs::path& game)
         CHECK(text.find("hud_head_0301") == text.rfind("hud_head_0301"));  // not added twice
         result = apply_mods(game, {});
         CHECK(result.ok && read(game / L"packages/test.pkgb") == std::string(package.begin(), package.end()));
+        // A new package written as text is compiled on install.
+        write(mods / L"PackText/files/packages/new.pkgb", "<packagedef>\n<model filename=\"hud/hud_head_2501\"/>\n</packagedef>\n");
+        result = apply_mods(game, {L"PackText"});
+        CHECK(result.ok);
+        std::string built = read(game / L"packages/new.pkgb");
+        CHECK(built.size() > 4 && contains(xml1::decode_xmlb(built.data(), (unsigned)built.size()), "hud_head_2501"));
+        result = apply_mods(game, {});
+        CHECK(result.ok && !fs::exists(game / L"packages/new.pkgb"));
+        fs::remove_all(mods / L"PackText");
         fs::remove(game / L"packages/test.pkgb");
         fs::remove_all(mods / L"Pack");
         fs::remove_all(game / L"packages");
@@ -314,7 +323,7 @@ static void bundled_test(const fs::path& scratch)
     fs::create_directories(game);
     CHECK(!bundled_files().empty());
     auto written = install_bundled_mods(game);
-    CHECK(written.size() == 2 && std::count(written.begin(), written.end(), L"early-xmen-xtraction") == 1 &&
+    CHECK(written.size() == 3 && std::count(written.begin(), written.end(), L"playable-magneto") == 1 && std::count(written.begin(), written.end(), L"early-xmen-xtraction") == 1 &&
           std::count(written.begin(), written.end(), L"playable-professor-x") == 1);
     fs::path mod = game / L"mods/early-xmen-xtraction";
     CHECK(fs::exists(mod / L"mod.ini") && fs::exists(mod / L"append/scripts/nyc/alison/nyc1_1_1.py"));

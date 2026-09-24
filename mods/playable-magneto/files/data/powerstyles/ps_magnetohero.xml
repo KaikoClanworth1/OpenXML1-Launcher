@@ -1,0 +1,62 @@
+<PowerStyle CanSteal="true" exclusive="magneto">
+<FightMove Name="magbolt1" lockangles="true" animenum="ea_power1" priority="5" aitype="projectile" aireusetime="5" icon="0" comboTextStarter="Magnetic" comboTextFinisher="Bolt">
+<require cat="skill" item="magneto_bolt" level="1"/>
+<trigger time="0" name="effect" effect="powers/magneto_pow1_charge" bolt="Bip01 L Hand"/>
+<trigger time="0" name="effect" effect="powers/magneto_pow1_arc"/>
+<trigger time="0.4" name="sound" sound="character/magnet_m/power1"/>
+<trigger tag="1" time="0.5" name="metal_balls" inherit="beam" spawneffect="powers/magneto_pow1_beamatk" beameffect="powers/magneto_pow1_beam" HitEffect="powers/magneto_pow1_hit" VictimEventTag="0" DamageType="dmg_magnetic" Damage="L2" beamBolt="Bip01 L Hand" PowerUsage="P1" PowerAttack="true" maxrange="800" damagelevel="3" radius="10"/>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove Name="magbolt2" fallback="magbolt1" inherit="magbolt1">
+<require cat="skill" item="magneto_bolt" level="2"/>
+<trigger tag="1" Damage="L3" PowerUsage="P1+"/>
+</FightMove>
+<FightMove Name="magbolt3" fallback="magbolt2" inherit="magbolt2">
+<require cat="skill" item="magneto_bolt" level="3"/>
+<trigger tag="1" Damage="L4" PowerUsage="P2"/>
+</FightMove>
+<FightMove Name="magbolt4" fallback="magbolt3" inherit="magbolt3">
+<require cat="skill" item="magneto_bolt" level="4"/>
+<trigger tag="1" Damage="L5" PowerUsage="P2+"/>
+</FightMove>
+<FightMove Name="magbolt5" fallback="magbolt4" inherit="magbolt4">
+<require cat="skill" item="magneto_bolt" level="5"/>
+<trigger tag="1" Damage="M1" PowerUsage="P3"/>
+</FightMove>
+<FightMove Name="magcrush1" lockangles="true" animenum="ea_power8" priority="5" aitype="projectile" aireusetime="10" icon="1" comboTextStarter="Magnetic" comboTextFinisher="Crush">
+<require cat="skill" item="magneto_crush" level="1"/>
+<trigger time="0" name="sound" sound="character/magnet_m/power2"/>
+<trigger time="0" name="effect" effect="powers/magneto_pow2_charge" bolt="Bip01 L Hand"/>
+<trigger time="0" name="effect" effect="powers/magneto_pow2_charge" bolt="Bip01 R Hand"/>
+<trigger time="0" name="effect" effect="powers/magneto_pow2_grow"/>
+<trigger tag="1" time="0.55" name="metal_balls" inherit="beam" spawneffect="powers/magneto_pow2_sentatk" beameffect="powers/magneto_pow2_beam" HitEffect="powers/magneto_pow2_hit" VictimEventTag="0" DamageType="dmg_magnetic" Damage="L3" beamBolt="Bip01 L Hand" PowerUsage="P1" PowerAttack="true" maxrange="800" damagelevel="5" radius="10"/>
+<trigger tag="2" time="0.55" name="metal_balls" inherit="beam" beameffect="powers/magneto_pow2_beam" hiteffect="powers/magneto_pow2_hit" VictimEventTag="0" DamageType="dmg_magnetic" Damage="L3" beamBolt="Bip01 R Hand" PowerUsage="P1" PowerAttack="true" maxrange="800" damagelevel="5" radius="10"/>
+<chain action="idle" result="idle"/>
+</FightMove>
+<FightMove Name="magcrush2" fallback="magcrush1" inherit="magcrush1">
+<require cat="skill" item="magneto_crush" level="2"/>
+<trigger tag="1" Damage="L4" PowerUsage="P1+"/>
+<trigger tag="2" Damage="L4" PowerUsage="P1+"/>
+</FightMove>
+<FightMove Name="magcrush3" fallback="magcrush2" inherit="magcrush2">
+<require cat="skill" item="magneto_crush" level="3"/>
+<trigger tag="1" Damage="L5" PowerUsage="P2"/>
+<trigger tag="2" Damage="L5" PowerUsage="P2"/>
+</FightMove>
+<FightMove Name="magcrush4" fallback="magcrush3" inherit="magcrush3">
+<require cat="skill" item="magneto_crush" level="4"/>
+<trigger tag="1" Damage="M1" PowerUsage="P2+"/>
+<trigger tag="2" Damage="M1" PowerUsage="P2+"/>
+</FightMove>
+<FightMove Name="magcrush5" fallback="magcrush4" inherit="magcrush4">
+<require cat="skill" item="magneto_crush" level="5"/>
+<trigger tag="1" Damage="M2" PowerUsage="P3"/>
+<trigger tag="2" Damage="M2" PowerUsage="P3"/>
+</FightMove>
+<FightMove Name="power_attack" fallback="magbolt5" inherit="magbolt5">
+<require cat="skill" item="magneto_bolt" level="6"/>
+</FightMove>
+<FightMove Name="power_smash" fallback="magcrush5" inherit="magcrush5">
+<require cat="skill" item="magneto_crush" level="6"/>
+</FightMove>
+</PowerStyle>

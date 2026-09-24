@@ -1,0 +1,40 @@
+<characters>
+<stats name="Magneto" charactername="Magneto" skin="2501" sounddir="magnet_m" powerstyle="ps_magnetohero" characteranims="25_magneto" level="1" strength="3" speed="4" body="4" mind="7" team="hero" RatingMelee="0.3" RatingRanged="0.5" RatingSupport="0.1" RatingDurability="0.4" scriptlevel="3" ailevel="2" canSeeStealthed="true" playable="true">
+<Race name="Mutant"/>
+<Talent name="magneto_bolt" level="1" descname="Magnetic Bolt" description="Hurls a beam of magnetic force at an enemy." icon="0" power="0">
+<level description="^L2 Magnetic Damage. ^P1 Energy."/>
+<level description="^L3 Magnetic Damage. ^P1+ Energy.">
+<require cat="level" level="3"/>
+</level>
+<level description="^L4 Magnetic Damage. ^P2 Energy.">
+<require cat="level" level="5"/>
+</level>
+<level description="^L5 Magnetic Damage. ^P2+ Energy.">
+<require cat="level" level="7"/>
+</level>
+<level description="^M1 Magnetic Damage. ^P3 Energy.">
+<require cat="level" level="9"/>
+</level>
+</Talent>
+<Talent name="magneto_crush" level="0" descname="Magnetic Crush" description="Two beams of crushing magnetic force." icon="1" power="1">
+<level description="^L3 Magnetic Damage. ^P1 Energy."/>
+<level description="^L4 Magnetic Damage. ^P1+ Energy.">
+<require cat="level" level="3"/>
+</level>
+<level description="^L5 Magnetic Damage. ^P2 Energy.">
+<require cat="level" level="5"/>
+</level>
+<level description="^M1 Magnetic Damage. ^P2+ Energy.">
+<require cat="level" level="7"/>
+</level>
+<level description="^M2 Magnetic Damage. ^P3 Energy.">
+<require cat="level" level="9"/>
+</level>
+</Talent>
+<Talent name="fightstyle_psionic" level="1"/>
+<Talent name="critical" level="0"/>
+<Talent name="toughness" level="0"/>
+<Talent name="leadership" level="0"/>
+<Talent name="mutantmastery" level="0"/>
+</stats>
+</characters>

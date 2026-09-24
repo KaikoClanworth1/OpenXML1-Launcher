@@ -1,0 +1,19 @@
+<packagedef>
+<actorskin filename="2501"/>
+<actoranimdb filename="25_magneto"/>
+<model filename="hud/hud_head_2501"/>
+<model filename="ui/hud/characters/2501"/>
+<effect filename="powers/magneto_pow1_charge"/>
+<effect filename="powers/magneto_pow1_hit"/>
+<effect filename="powers/magneto_pow1_arc"/>
+<effect filename="powers/magneto_pow1_beamatk"/>
+<effect filename="powers/magneto_pow1_beam"/>
+<effect filename="powers/magneto_pow2_charge"/>
+<effect filename="powers/magneto_pow2_grow"/>
+<effect filename="powers/magneto_pow2_sentatk"/>
+<effect filename="powers/magneto_pow2_beam"/>
+<effect filename="powers/magneto_pow2_hit"/>
+<fightstyle filename="data/powerstyles/ps_magnetohero"/>
+<actoranimdb filename="99_cape"/>
+<actoranimdb filename="9901"/>
+</packagedef>
