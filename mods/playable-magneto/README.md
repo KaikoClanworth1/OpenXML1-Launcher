@@ -1,10 +1,11 @@
 # Playable Magneto (template character mod)
 
-Magneto as a playable hero from level 1, with the **final boss's powers**. He is built only from what the
-game already has: the boss's animations and power effects, plus his model, cape, voice and HUD portraits, with a roster portrait and
-power icons made for the mod. It needs no other game.
-It is also the template for character mods. Each file below is the minimum a new playable hero
-needs, and it is short enough to copy.
+Magneto as a playable hero from level 1, with the **final boss's powers**. He is built from what the game
+already has (the boss's animations and power effects, his model, cape, voice and HUD portraits), plus a
+roster portrait and power icons made for the mod. It needs no other game.
+
+It is also the template for character mods. Each file below is the minimum a new playable hero needs, and
+it is short enough to copy.
 
 ## The files, and what each one does
 
