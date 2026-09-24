@@ -1,0 +1,3 @@
+[submodule "external/OpenXML1"]
+	path = external/OpenXML1
+	url = https://github.com/GTTeancum/OpenXML1xbox.git
