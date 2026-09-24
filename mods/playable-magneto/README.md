@@ -21,7 +21,7 @@ Magnetic Bolt fires. Its effects play, it knocks a troop into the air, and it co
 
 The packages are written as plain XML inside `<packagedef>`, and the launcher compiles them to the game's
 binary PKGB form on install. The generator that wrote this mod is kept beside it as
-`mods/playable-magneto-source.py`.
+`tools/make-playable-magneto.py`.
 
 ## Powers
 
