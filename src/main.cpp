@@ -299,7 +299,8 @@ void describe_mod(int index)
     const auto& mod = g_mods[index];
     std::wstring text = mod.description.empty() ? mod.name : mod.description;
     if (!mod.problem.empty()) text = L"Cannot be installed: " + mod.problem;
-    else text += L"   (" + std::to_wstring(mod.files) + L" files, " + std::to_wstring(mod.merges) + L" merged)";
+    else text += L"   (" + std::to_wstring(mod.files) + L" files, " + std::to_wstring(mod.merges) + L" merged, " +
+                 std::to_wstring(mod.appends) + L" appended)";
     SetWindowTextW(info, text.c_str());
 }
 

@@ -1,0 +1,4 @@
+<MISSION maxheros="4">
+<REQUIREDHERO name="storm"/>
+<REQUIREDHERO name="phoenix"/>
+</MISSION>

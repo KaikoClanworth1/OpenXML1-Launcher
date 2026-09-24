@@ -183,7 +183,7 @@ bool restore(const fs::path& game, std::wstring& error)
 // ---- top-level XML entries -------------------------------------------------
 
 struct Entry { size_t begin, end; std::string tag, name; };
-struct Document { std::string root; size_t content_begin = 0, content_end = 0; std::vector<Entry> entries; };
+struct Document { std::string root; size_t root_begin = 0, content_begin = 0, content_end = 0; std::vector<Entry> entries; };
 
 size_t tag_end(const std::string& text, size_t at)
 {
@@ -246,6 +246,7 @@ bool parse(const std::string& text, Document& doc, std::string& error)
     if (end == std::string::npos) { error = "unterminated root tag"; return false; }
     if (text[end - 2] == '/') { error = "the root element is empty"; return false; }
     doc.root = tag_name(text, at);
+    doc.root_begin = at;
     doc.content_begin = end;
     int depth = 0;
     Entry current{};
@@ -278,6 +279,55 @@ bool same(const std::string& a, const std::string& b)
     return a.size() == b.size() && std::equal(a.begin(), a.end(), b.begin(), [](char x, char y) { return tolower((unsigned char)x) == tolower((unsigned char)y); });
 }
 
+struct Attribute { std::string name, value; size_t value_begin, value_end; };
+
+// The name="value" pairs of a start tag, with where each value sits in it.
+std::vector<Attribute> attributes(const std::string& tag)
+{
+    std::vector<Attribute> out;
+    size_t i = 1;
+    while (i < tag.size() && !isspace((unsigned char)tag[i]) && tag[i] != '>' && tag[i] != '/') ++i;  // tag name
+    while (i < tag.size()) {
+        while (i < tag.size() && isspace((unsigned char)tag[i])) ++i;
+        size_t name_begin = i;
+        while (i < tag.size() && !isspace((unsigned char)tag[i]) && tag[i] != '=' && tag[i] != '>' && tag[i] != '/') ++i;
+        if (i == name_begin) break;
+        std::string name = tag.substr(name_begin, i - name_begin);
+        while (i < tag.size() && isspace((unsigned char)tag[i])) ++i;
+        if (i >= tag.size() || tag[i] != '=') continue;
+        ++i;
+        while (i < tag.size() && isspace((unsigned char)tag[i])) ++i;
+        if (i >= tag.size() || (tag[i] != '"' && tag[i] != '\'')) break;
+        char quote = tag[i];
+        size_t close = tag.find(quote, i + 1);
+        if (close == std::string::npos) break;
+        out.push_back({name, tag.substr(i + 1, close - i - 1), i + 1, close});
+        i = close + 1;
+    }
+    return out;
+}
+
+// Sets each of `changes` on the start tag: replacing a value the tag already
+// has (names compared without case), or adding the attribute at its end.
+std::string with_attributes(std::string tag, const std::vector<Attribute>& changes)
+{
+    for (const auto& change : changes) {
+        bool done = false;
+        for (const auto& existing : attributes(tag))
+            if (same(existing.name, change.name)) {
+                tag.replace(existing.value_begin, existing.value_end - existing.value_begin, change.value);
+                done = true;
+                break;
+            }
+        if (!done) {
+            size_t close = tag.size() - 1;
+            if (close > 0 && tag[close - 1] == '/') --close;
+            tag.insert(close, " " + change.name + "=\"" + change.value + "\"");
+        }
+    }
+    return tag;
+}
+
 std::string read_bytes(const fs::path& path)
 {
     std::ifstream in(path, std::ios::binary);
@@ -289,6 +339,8 @@ struct Plan {
     std::map<std::wstring, std::pair<fs::path, std::wstring>> copies;  // key -> (relative, source file)
     std::map<std::wstring, std::vector<fs::path>> merges;              // key -> fragment files, in order
     std::map<std::wstring, fs::path> merge_targets;                    // key -> relative
+    std::map<std::wstring, std::vector<fs::path>> appends;             // key -> text files, in order
+    std::map<std::wstring, fs::path> append_targets;                   // key -> relative
     std::map<std::wstring, std::wstring> copy_owner;
     std::vector<std::wstring> conflicts;
 };
@@ -324,8 +376,36 @@ Plan make_plan(const fs::path& game, const std::vector<std::wstring>& enabled)
                 if (!own && fs::exists(game / other)) add(other);
             }
         }
+        for (const auto& relative : files_under(mod / L"append")) {
+            auto key = key_of(relative);
+            plan.append_targets[key] = relative;
+            plan.appends[key].push_back(mod / L"append" / relative);
+        }
     }
     return plan;
+}
+
+// Only text the game reads as text can be appended to.
+bool appendable(const fs::path& relative)
+{
+    auto ext = lower(relative.extension().wstring());
+    return text_data(relative) || ext == L".py" || ext == L".txt";
+}
+
+// `addition` added at the end of `text`, in the file's own line endings.
+std::string append_text(std::string text, std::string addition)
+{
+    const bool crlf = text.find("\r\n") != std::string::npos;
+    std::string plain;
+    for (size_t i = 0; i < addition.size(); ++i)
+        if (!(addition[i] == '\r' && i + 1 < addition.size() && addition[i + 1] == '\n')) plain += addition[i];
+    std::string converted;
+    for (char c : plain) { if (c == '\n' && crlf) converted += '\r'; converted += c; }
+    const char* newline = crlf ? "\r\n" : "\n";
+    if (!text.empty() && text.back() != '\n') text += newline;
+    text += converted;
+    if (!text.empty() && text.back() != '\n') text += newline;
+    return text;
 }
 
 } // namespace
@@ -366,6 +446,13 @@ bool merge_xml(const std::string& base, const std::string& fragment, std::string
     if (!appended.empty() && !out.empty() && out.back() != '\n') out += newline;
     for (const auto& added : appended) { out += added.second; out += newline; }
     out.append(base, b.content_end, std::string::npos);
+    // Attributes on the fragment's root set the same attributes on the game's
+    // root; the root tag is unchanged in `out` up to this point.
+    auto changes = attributes(fragment.substr(f.root_begin, f.content_begin - f.root_begin));
+    if (!changes.empty()) {
+        std::string root = out.substr(b.root_begin, b.content_begin - b.root_begin);
+        out.replace(b.root_begin, root.size(), with_attributes(root, changes));
+    }
     return true;
 }
 
@@ -391,8 +478,10 @@ std::vector<ModInfo> find_mods(const fs::path& game)
         }
         auto files = files_under(entry.path() / L"files");
         auto merges = fragments_under(entry.path() / L"merge");
+        auto appends = files_under(entry.path() / L"append");
         mod.files = (unsigned)files.size();
         mod.merges = (unsigned)merges.size();
+        mod.appends = (unsigned)appends.size();
         for (const auto& relative : files) {
             auto why = unsafe_path(relative);
             if (!why.empty()) { mod.problem = relative.wstring() + L": " + why; break; }
@@ -404,7 +493,14 @@ std::vector<ModInfo> find_mods(const fs::path& game)
             if (why.empty() && !fs::exists(game / relative)) why = L"the game has no such file to merge into";
             if (!why.empty()) mod.problem = L"merge\\" + relative.wstring() + L": " + why;
         }
-        if (mod.problem.empty() && !mod.files && !mod.merges) mod.problem = L"has no files\\ or merge\\ folder";
+        for (const auto& relative : appends) {
+            if (!mod.problem.empty()) break;
+            auto why = unsafe_path(relative);
+            if (why.empty() && !appendable(relative)) why = L"only text files can be appended to";
+            if (why.empty() && !fs::exists(game / relative)) why = L"the game has no such file to append to";
+            if (!why.empty()) mod.problem = L"append\\" + relative.wstring() + L": " + why;
+        }
+        if (mod.problem.empty() && !mod.files && !mod.merges && !mod.appends) mod.problem = L"has no files\\, merge\\ or append\\ folder";
         mods.push_back(mod);
     }
     std::sort(mods.begin(), mods.end(), [](const ModInfo& a, const ModInfo& b) { return lower(a.name) < lower(b.name); });
@@ -464,6 +560,18 @@ ApplyResult apply_mods(const fs::path& game, const std::vector<std::wstring>& en
             merged.insert(key);
             ++result.written;
         }
+        for (const auto& [key, additions] : plan.appends) {
+            const fs::path& relative = plan.append_targets[key];
+            auto why = unsafe_path(relative);
+            if (why.empty() && !appendable(relative)) why = L"only text files can be appended to";
+            if (!why.empty()) throw std::runtime_error(relative.u8string() + ": " + narrow(why));
+            std::string text = read_bytes(game / relative);
+            for (const auto& addition : additions) text = append_text(text, read_bytes(addition));
+            ledger.touch(relative);
+            write_atomic(game / relative, text);
+            if (text_data(relative)) { merged.insert(key); plan.merge_targets[key] = relative; }
+            ++result.written;
+        }
         // The game loads the compiled form, so compile what was just written
         // unless the mod shipped a compiled file of its own.
         for (const auto& [key, copy] : plan.copies) {
@@ -503,7 +611,8 @@ void ensure_mods_readme(const fs::path& game)
         "the game's own files back when you untick them.\r\n\r\n"
         "  mods\\MyMod\\mod.ini\r\n"
         "  mods\\MyMod\\files\\...   copied over the game folder, same paths\r\n"
-        "  mods\\MyMod\\merge\\...   XML data merged into the game's file of the same path\r\n\r\n"
+        "  mods\\MyMod\\merge\\...   XML data merged into the game's file of the same path\r\n"
+        "  mods\\MyMod\\append\\...  text added to the end of the game's file (scripts)\r\n\r\n"
         "mod.ini:\r\n\r\n"
         "  [Mod]\r\n"
         "  Name = Deadpool\r\n"
@@ -521,6 +630,10 @@ void ensure_mods_readme(const fs::path& game)
         "An entry with the same tag and name as one of the game's replaces it; any\r\n"
         "other entry is added. Several character mods can all merge into herostat\r\n"
         "this way. An English (.eng) file is also merged into the other languages.\r\n"
+        "Attributes on the fragment's root element set those on the game file's\r\n"
+        "root, for example <MISSION maxheros=\"4\"> in merge\\data\\missions.\r\n\r\n"
+        "Appending: append\\scripts\\...\\name.py holds only the new lines; they are\r\n"
+        "added to the end of the game's script in its own line endings.\r\n\r\n"
         "Text data is compiled to the form the game loads (herostat.eng becomes\r\n"
         "herostat.engb) automatically.\r\n\r\n"
         "Two mods that replace the same file under files\\ conflict: the one lower in\r\n"

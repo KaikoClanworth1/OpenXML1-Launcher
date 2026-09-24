@@ -140,13 +140,24 @@ The format is written for players in `mods\README.txt`, in the game folder.
 mods\<Mod>\mod.ini       [Mod] Name, Type (character|other), Author, Version, Description
 mods\<Mod>\files\...     copied over the game folder at the same paths
 mods\<Mod>\merge\...     XML entries merged into the game's file of the same path
+mods\<Mod>\append\...    text added to the end of the game's file (scripts, text data)
 ```
 
 **Merging.** Several character mods can share `data/herostat.eng` this way.
 
 - Each top-level entry replaces the game's entry with the same tag and `name`,
   or is appended.
+- Attributes on the fragment's root element set those on the game file's root.
+  An example is `<MISSION maxheros="4">` for `data/missions/alison.eng`.
 - An English fragment also goes into the other languages the game has.
+
+**Appending.** A file under `append\` holds only new lines. They are added to
+the end of the game's file of the same path, in that file's own line endings.
+This lets a mod add script commands without shipping a copy of the game's
+script.
+
+**Example.** [`mods/early-xmen-xtraction`](mods/early-xmen-xtraction) uses
+both. It is the first mod, tested in the game.
 - Everything written is compiled to the binary form the game loads. The
   launcher uses the game's own compiler for this, with a round-trip check.
 

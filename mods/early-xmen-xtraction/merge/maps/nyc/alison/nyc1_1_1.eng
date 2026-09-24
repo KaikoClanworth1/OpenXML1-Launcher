@@ -1,0 +1,6 @@
+<world>
+<entity name="xtraction_point" classname="gameent" actsound="common/game/xtraction" acttogglesanim="false" quickuse="true" model="puzzles/beacon_xtraction" nogravity="true" animstarton="true" toggleonact="false" nopickup="true" nopush="true" actonuse="true" description="Xtraction Point" actscript="extractionPoint('_OWNER_')" team="hero" actmatchteam="true" actleader="true" ignoretelekinesis="true"/>
+<entinst type="xtraction_point">
+<inst name="xtraction_point" pos="1384.2 1458.9 9.6"/>
+</entinst>
+</world>

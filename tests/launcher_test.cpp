@@ -86,6 +86,13 @@ static void merge_test()
     CHECK(contains(out, "<!-- <stats name=\"commented\"> -->"));
     CHECK(out.find("Deadpool") < out.find("</characters>"));
     CHECK(!merge_xml(base, "<npcs><stats name=\"a\"/></npcs>", out, error));
+
+    // Attributes on the fragment's root set those on the game file's root.
+    std::string mission = "<MISSION descname=\"Alison in NYC\" minheros=\"2\" maxheros=\"2\">\r\n<REQUIREDHERO name=\"wolverine\"/>\r\n</MISSION>\r\n";
+    CHECK(merge_xml(mission, "<MISSION MAXHEROS=\"4\" teamselect=\"true\">\n</MISSION>\n", out, error));
+    CHECK(contains(out, "maxheros=\"4\"") && contains(out, "minheros=\"2\"") && contains(out, "descname=\"Alison in NYC\""));
+    CHECK(contains(out, " teamselect=\"true\">") && contains(out, "<REQUIREDHERO name=\"wolverine\"/>"));
+    CHECK(!contains(out, "maxheros=\"2\""));
 }
 
 static void install_test(const fs::path& game)
@@ -99,6 +106,7 @@ static void install_test(const fs::path& game)
     auto binary = xml1::compile_xmlb(herostat);
     write(game / L"data/herostat.engb", std::string(binary.begin(), binary.end()));
     write(game / L"textures/a.png", "original");
+    write(game / L"scripts/test/start.py", "    first()\r\n    second()");
     auto before = snapshot(game);
 
     fs::path mods = game / L"mods";
@@ -111,13 +119,18 @@ static void install_test(const fs::path& game)
     write(mods / L"C/mod.ini", "[Mod]\nName = Textures\n");
     write(mods / L"C/files/textures/a.png", "from C");
     write(mods / L"Bad/files/default.xbe", "nope");
+    // append\: lines added to the end of a game script, in its own line endings.
+    write(game / L"scripts/test/start.py", "    first()\r\n    second()");
+    write(mods / L"Lines/mod.ini", "[Mod]\nName = Lines\n");
+    write(mods / L"Lines/append/scripts/test/start.py", "    added(\"one\")\n    added(\"two\")\n");
+    write(mods / L"BadAppend/append/scripts/test/missing.py", "x");
     // What the game's first-run setup leaves beside a fragment is not the mod's.
     write(mods / L"A/merge/data/herostat.engb", "compiled by the game");
 
     auto found = find_mods(game);
-    CHECK(found.size() == 4);
+    CHECK(found.size() == 6);
     for (const auto& m : found) {
-        if (m.folder == L"Bad") CHECK(!m.problem.empty());
+        if (m.folder == L"Bad" || m.folder == L"BadAppend") CHECK(!m.problem.empty());
         else CHECK(m.problem.empty());
         if (m.folder == L"A") CHECK(m.character && m.name == L"Deadpool" && m.version == L"1.0" && m.merges == 1);
         if (m.folder == L"C") CHECK(!m.character);
@@ -139,6 +152,13 @@ static void install_test(const fs::path& game)
     CHECK(read(game / L"textures/a.png") == "from C");
     CHECK(read(game / L"actors/9901.igb") == "model");
     CHECK(installed_mods(game) == all);
+
+    // Appending, then taking it out again.
+    result = apply_mods(game, {L"Lines"});
+    CHECK(result.ok);
+    CHECK(read(game / L"scripts/test/start.py") == "    first()\r\n    second()\r\n    added(\"one\")\r\n    added(\"two\")\r\n");
+    result = apply_mods(game, all);
+    CHECK(result.ok);
 
     // A different selection starts from the originals, not from A+B+C.
     result = apply_mods(game, {L"C"});
@@ -348,6 +368,19 @@ int main(int argc, char** argv)
         if (arg == "--game" && i + 1 < argc) real_data_test(fs::u8path(argv[++i]), scratch);
         else if (arg == "--image" && i + 1 < argc) image_test(fs::u8path(argv[++i]));
         else if (arg == "--release-check" && i + 1 < argc) release_check(scratch, fs::u8path(argv[++i]));
+        else if (arg == "--apply" && i + 1 < argc) {
+            // --apply <game folder> [mod folder names...]: the launcher's own
+            // mod install, on a real game folder. No names restores the game.
+            fs::path game = fs::u8path(argv[++i]);
+            std::vector<std::wstring> mods;
+            while (i + 1 < argc && argv[i + 1][0] != '-') mods.push_back(widen(argv[++i]));
+            for (const auto& m : find_mods(game))
+                std::printf("mod %ls: %ls, %u files, %u merged%s%ls\n", m.folder.c_str(), m.name.c_str(), m.files, m.merges,
+                            m.problem.empty() ? "" : ", PROBLEM: ", m.problem.c_str());
+            auto result = apply_mods(game, mods);
+            CHECK(result.ok);
+            std::printf("applied %zu mod(s): %s %ls\n", mods.size(), result.ok ? "ok" : "FAILED", result.error.c_str());
+        }
         else if (arg == "--install" && i + 3 < argc) {
             full_install_test(fs::u8path(argv[i + 1]), fs::u8path(argv[i + 2]), fs::u8path(argv[i + 3]));
             i += 3;

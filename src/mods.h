@@ -7,7 +7,9 @@
 //
 // Each mod is a folder under <game>/mods/ with a mod.ini and either or both of
 //   files/  copied over the game folder, same relative paths
-//   merge/  XML data merged into the game's own file of the same path
+//   merge/  XML data merged into the game's own file of the same path;
+//           attributes on a fragment's root set those on the game file's root
+//   append/ text added to the end of the game's file of the same path
 // Merging is what lets several character mods share data/herostat.eng: each
 // top-level entry (a <stats name="...">) replaces the game's entry of the same
 // tag and name, or is appended. Text data is compiled to the binary form the
@@ -22,7 +24,7 @@ struct ModInfo {
     std::wstring folder;       // directory name under mods/, the mod's identity
     std::wstring name, author, version, description;
     bool character = false;    // Type = character
-    unsigned files = 0, merges = 0;
+    unsigned files = 0, merges = 0, appends = 0;
     std::wstring problem;      // non-empty: the mod cannot be installed
 };
 
