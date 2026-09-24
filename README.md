@@ -169,8 +169,7 @@ mods\<Mod>\append\...    text added to the end of the game's file (scripts, text
 - Everything written is compiled to the binary form the game loads. The
   launcher uses the game's own compiler for this, with a round-trip check.
 
-**Packages.** A fragment under `merge\packages\...
-ame.pkgb` is plain XML text
+**Packages.** A fragment under `merge\packages\...\name.pkgb` is plain XML text
 inside `<packagedef>`. The game's package (binary XMLB) is decoded, the entries
 merged, and the result compiled back with the same round-trip check. An entry
 the package already has, word for word, is not added twice.
