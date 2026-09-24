@@ -370,6 +370,10 @@ static void bundled_test(const fs::path& scratch)
         a.erase(std::remove(a.begin(), a.end(), '\r'), a.end());  // git may check files out with CRLF
         CHECK(a == b);
     }
+    // Binary files (with NUL and non-UTF-8 bytes) arrive intact.
+    fs::path portrait = L"playable-magneto/files/ui/models/characters/2501.igb";
+    std::string original = read(source.parent_path() / portrait);
+    CHECK(original.size() > 1000 && original.find('\0') != std::string::npos && read(game / L"mods" / portrait) == original);
     CHECK(install_bundled_mods(game).empty());  // same version: left alone
     write(mod / L"mod.ini", "[Mod]\nName = old\nVersion = 0.0\n");
     CHECK(install_bundled_mods(game).size() == 1);  // different version: refreshed

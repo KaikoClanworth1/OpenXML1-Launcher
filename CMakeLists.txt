@@ -25,19 +25,28 @@ add_library(launcher-miniz STATIC
 target_include_directories(launcher-miniz PUBLIC "${XML1}/external/miniz")
 target_compile_definitions(launcher-miniz PUBLIC MINIZ_NO_ARCHIVE_WRITING_APIS _CRT_SECURE_NO_WARNINGS)
 
-# Mods that ship with the launcher: every file under mods/ becomes a
-# {path, contents} entry compiled into the exe (src/bundled.cpp), and the
-# launcher writes them into the game's mods folder.
+# Mods that ship with the launcher: every file under mods/ becomes a byte
+# array and a {path, contents} entry compiled into the exe (src/bundled.cpp),
+# and the launcher writes them into the game's mods folder. Bytes, not string
+# literals, so binary files (models, textures) arrive intact.
 file(GLOB_RECURSE LAUNCHER_BUNDLED_MODS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/mods/*")
 # Re-embed when a mod file's contents change, not only when files come or go.
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${LAUNCHER_BUNDLED_MODS})
-set(bundled "")
+set(bundled_data "")
+set(bundled_table "")
+set(index 0)
 foreach(source IN LISTS LAUNCHER_BUNDLED_MODS)
     file(RELATIVE_PATH relative "${CMAKE_CURRENT_SOURCE_DIR}/mods" "${source}")
-    file(READ "${source}" contents)
-    string(APPEND bundled "{u8\"${relative}\", R\"BUNDLEDMOD(${contents})BUNDLEDMOD\"},\n")
+    file(READ "${source}" contents HEX)
+    string(LENGTH "${contents}" hex_length)
+    math(EXPR size "${hex_length} / 2")
+    string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," bytes "${contents}")
+    string(APPEND bundled_data "static const unsigned char bundled_${index}[] = {${bytes}0};\n")
+    string(APPEND bundled_table "{u8\"${relative}\", {reinterpret_cast<const char*>(bundled_${index}), ${size}}},\n")
+    math(EXPR index "${index} + 1")
 endforeach()
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/bundled_mods.inc.new" "${bundled}")
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/bundled_mods.inc.new"
+    "${bundled_data}static const BundledFile bundled_table[] = {\n${bundled_table}};\n")
 file(COPY_FILE "${CMAKE_CURRENT_BINARY_DIR}/bundled_mods.inc.new" "${CMAKE_CURRENT_BINARY_DIR}/bundled_mods.inc" ONLY_IF_DIFFERENT)
 
 add_library(launcher-core STATIC

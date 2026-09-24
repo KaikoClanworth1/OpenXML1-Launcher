@@ -1,6 +1,7 @@
 #pragma once
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <vector>
 
 // Mods that ship inside the launcher (the repository's mods/ folder, compiled
@@ -9,7 +10,7 @@
 namespace launcher {
 namespace fs = std::filesystem;
 
-struct BundledFile { const char* path; const char* contents; };
+struct BundledFile { const char* path; std::string_view contents; };
 const std::vector<BundledFile>& bundled_files();
 
 // Writes each bundled mod into <game>/mods/<folder> when the folder is missing

@@ -6,11 +6,11 @@
 
 namespace launcher {
 
+#include "bundled_mods.inc"
+
 const std::vector<BundledFile>& bundled_files()
 {
-    static const std::vector<BundledFile> files = {
-#include "bundled_mods.inc"
-    };
+    static const std::vector<BundledFile> files(std::begin(bundled_table), std::end(bundled_table));
     return files;
 }
 
@@ -53,7 +53,7 @@ std::vector<std::wstring> install_bundled_mods(const fs::path& game)
         fs::path target = mods_dir(game) / fs::u8path(folder);
         std::string bundled_version;
         for (const auto* file : files)
-            if (fs::u8path(file->path).filename() == L"mod.ini") bundled_version = version_of(file->contents);
+            if (fs::u8path(file->path).filename() == L"mod.ini") bundled_version = version_of(std::string(file->contents));
         std::ifstream existing(target / L"mod.ini", std::ios::binary);
         std::string installed_text((std::istreambuf_iterator<char>(existing)), {});
         if (existing.is_open() && version_of(installed_text) == bundled_version) continue;
@@ -63,7 +63,7 @@ std::vector<std::wstring> install_bundled_mods(const fs::path& game)
             fs::path out = mods_dir(game) / fs::u8path(file->path);
             fs::create_directories(out.parent_path(), ec);
             std::ofstream stream(out, std::ios::binary | std::ios::trunc);
-            stream << file->contents;
+            stream.write(file->contents.data(), (std::streamsize)file->contents.size());
             ok = ok && (bool)stream;
         }
         if (ok) written.push_back(widen(folder));

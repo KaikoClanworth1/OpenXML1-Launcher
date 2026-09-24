@@ -11,6 +11,7 @@ actors/25_magnetohero.igb so it can be edited (for example, to add the
 menu_idle / menu_action / menu_goodbye animations the team screens play).
 """
 from pathlib import Path
+import shutil
 import sys
 
 M = Path(sys.argv[1])
@@ -28,8 +29,8 @@ w('mod.ini', f"""[Mod]
 Name = Playable Magneto
 Type = character
 Author = KaikoClanworth1
-Version = 0.3
-Description = Magneto as a playable hero from level 1, with the final boss's powers: Magnetic Bolt, Magnetic Crush, Sphere Shield and the Magnetic Shockwave Xtreme. With your own X-Men Legends II installed, he also gets its roster portrait and power icons.
+Version = 0.4
+Description = Magneto as a playable hero from level 1, with the final boss's powers: Magnetic Bolt, Magnetic Crush, Sphere Shield and the Magnetic Shockwave Xtreme, and his own roster portrait. With your own X-Men Legends II installed, he also gets its power icons.
 
 [Copy]
 actors/25_magnetoboss.igb = actors/{ANIMS}.igb
@@ -37,7 +38,6 @@ actors/25_magnetoboss.igb = actors/{ANIMS}.igb
 [Import]
 Game = X-Men Legends II
 Detect = XMen2.exe
-ui/models/characters/2501.igb = ui/models/characters/2501.igb
 textures/ui/magneto_icons1.igb = textures/ui/magneto_icons1.igb
 """)
 
@@ -187,15 +187,18 @@ w('files/packages/generated/characters/magneto_2501.pkgb', '<packagedef>\n' + SK
 w('files/packages/generated/characters/magneto_2501_nc.pkgb', '<packagedef>\n' + SKIN + CAPE + '</packagedef>\n')
 w('files/packages/generated/characters/magneto_xml.pkgb',
   '<packagedef>\n<xml filename="data/entities/magnetoboss_ents"/>\n<fightstyle filename="data/powerstyles/ps_magnetohero"/>\n</packagedef>\n')
+# His roster portrait, made for this mod (tools/assets/magneto-portrait-2501.igb).
+portrait = M / 'files/ui/models/characters/2501.igb'
+portrait.parent.mkdir(parents=True, exist_ok=True)
+shutil.copyfile(Path(__file__).parent / 'assets/magneto-portrait-2501.igb', portrait)
+w('merge/packages/generated/maps/package/menus/characters_heads.pkgb',
+  '<packagedef>\n<model filename="ui/models/characters/2501"/>\n</packagedef>\n')
 for name in MISSION_SCRIPTS:
     w(f'append/scripts/missions/{name}', 'setInCampaign("magneto", "TRUE" )\n')
 
-# with-imports: used only when every [Import] file was found: XML2's power
-# icons and roster portrait.
+# with-imports: used only when every [Import] file was found: XML2's power icons.
 w('with-imports/merge/data/herostat.eng', hero(True))
 w('with-imports/files/data/powerstyles/ps_magnetohero.xml', powerstyle(True))
 w('with-imports/merge/packages/generated/characters/magneto_2501.pkgb',
   '<packagedef>\n<texture filename="textures/ui/magneto_icons1"/>\n</packagedef>\n')
-w('with-imports/merge/packages/generated/maps/package/menus/characters_heads.pkgb',
-  '<packagedef>\n<model filename="ui/models/characters/2501"/>\n</packagedef>\n')
 print('written', sum(1 for f in M.rglob('*') if f.is_file()), 'files')
