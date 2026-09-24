@@ -1,5 +1,5 @@
 <characters>
-<stats name="Magneto" charactername="Magneto" skin="2501" sounddir="magnet_m" powerstyle="ps_magnetohero" characteranims="25_magnetohero" level="1" strength="3" speed="4" body="4" mind="7" team="hero" RatingMelee="0.3" RatingRanged="0.5" RatingSupport="0.2" RatingDurability="0.4" scriptlevel="3" ailevel="2" canSeeStealthed="true" playable="true">
+<stats name="Magneto" charactername="Magneto" skin="2501" skin_90s="02" sounddir="magnet_m" powerstyle="ps_magnetohero" characteranims="25_magnetohero" level="1" strength="3" speed="4" body="4" mind="7" team="hero" RatingMelee="0.3" RatingRanged="0.5" RatingSupport="0.2" RatingDurability="0.4" scriptlevel="3" ailevel="2" canSeeStealthed="true" playable="true">
 <BoltOn slot="ebolton_cape" bolt="Bip01 Spine2" model="9901" anim="99_cape"/>
 <Race name="Mutant"/>
 <Talent name="magneto_bolt" level="1" descname="Magnetic Bolt" description="A beam of magnetic force that encases its target in metal." icon_texture="textures/ui/magneto_all.png" icon="3" power="0">
@@ -54,6 +54,11 @@
 <Talent name="magneto_xtreme" level="0" descname="MAGNETIC SHOCKWAVE" description="XTreme wave of magnetic force that hurls enemies away." icon_texture="textures/ui/magneto_all.png" icon="1" power="3">
 <level description="Unlocks this ability" cost="2">
 <require cat="level" level="15"/>
+</level>
+</Talent>
+<Talent name="magneto_glide" level="1" descname="Magnetic Glide" description="Rides the magnetic field, moving faster than he walks." power="5">
+<level description="+^75% movement speed.">
+<activepowerup powerup="move" level="1.75" affect_type="scale" life="-1"/>
 </level>
 </Talent>
 <Talent name="fightstyle_psionic" level="1"/>

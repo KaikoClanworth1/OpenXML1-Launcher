@@ -29,12 +29,18 @@ w('mod.ini', f"""[Mod]
 Name = Playable Magneto
 Type = character
 Author = KaikoClanworth1
-Version = 0.6
-Description = Magneto as a playable hero from level 1, with the final boss's powers: Magnetic Bolt, Magnetic Crush, Sphere Shield and the Magnetic Shockwave Xtreme, with his own roster portrait and power icons.
+Version = 0.7
+Description = Magneto as a playable hero from level 1, with the final boss's powers: Magnetic Bolt, Magnetic Crush, Sphere Shield and the Magnetic Shockwave Xtreme, with his own roster portrait and power icons, faster movement, and his animated-series costume.
 
 [Copy]
 actors/25_magnetoboss.igb = actors/{ANIMS}.igb
+hud/hud_head_2501.igb = hud/hud_head_2502.igb
 """)
+
+# Costumes: the base skin 2501, and category = two-digit number for each
+# alternate (skin_90s="02" is skin 2502). 90s is one of OpenXML1's added categories.
+SKINS = 'skin_90s="02"'
+MOVE_SCALE = 1.75
 
 # ---- powers ---------------------------------------------------------------------
 USAGE = ['P1', 'P1+', 'P2', 'P2+', 'P3']
@@ -143,14 +149,20 @@ def hero():
                     [(f'^BST{i + 1} Seconds. -^A{i + 2} Damage. ^{SHIELD_USE[i]} Energy.', [5, 7, 9, 11, 13][i]) for i in range(5)], first_cost=2)
     xtreme = talent('magneto_xtreme', 'MAGNETIC SHOCKWAVE', 'XTreme wave of magnetic force that hurls enemies away.', icon, ICON['xtreme'], 3,
                     [('Unlocks this ability', 15)], first_cost=2)
+    # The boss's animation set has only a slow boss walk (no run), so he moves
+    # faster by a permanent move-scale powerup, as the game's speed items do.
+    glide = (f'<Talent name="magneto_glide" level="1" descname="Magnetic Glide" description="Rides the magnetic field, moving faster than he walks." power="5">\n'
+             f'<level description="+^{round((MOVE_SCALE - 1) * 100)}% movement speed.">\n'
+             f'<activepowerup powerup="move" level="{MOVE_SCALE}" affect_type="scale" life="-1"/>\n</level>\n</Talent>')
     return f'''<characters>
-<stats name="Magneto" charactername="Magneto" skin="2501" sounddir="magnet_m" powerstyle="ps_magnetohero" characteranims="{ANIMS}" level="1" strength="3" speed="4" body="4" mind="7" team="hero" RatingMelee="0.3" RatingRanged="0.5" RatingSupport="0.2" RatingDurability="0.4" scriptlevel="3" ailevel="2" canSeeStealthed="true" playable="true">
+<stats name="Magneto" charactername="Magneto" skin="2501" {SKINS} sounddir="magnet_m" powerstyle="ps_magnetohero" characteranims="{ANIMS}" level="1" strength="3" speed="4" body="4" mind="7" team="hero" RatingMelee="0.3" RatingRanged="0.5" RatingSupport="0.2" RatingDurability="0.4" scriptlevel="3" ailevel="2" canSeeStealthed="true" playable="true">
 <BoltOn slot="ebolton_cape" bolt="Bip01 Spine2" model="9901" anim="99_cape"/>
 <Race name="Mutant"/>
 {bolt}
 {crush}
 {shield}
 {xtreme}
+{glide}
 <Talent name="fightstyle_psionic" level="1"/>
 <Talent name="critical" level="0"/>
 <Talent name="toughness" level="0"/>
@@ -165,9 +177,10 @@ def hero():
 EFFECTS = ['magneto_pow1_charge', 'magneto_pow1_hit', 'magneto_pow1_arc', 'magneto_pow1_beamatk', 'magneto_pow1_beam',
            'magneto_pow2_charge', 'magneto_pow2_grow', 'magneto_pow2_sentatk', 'magneto_pow2_beam', 'magneto_pow2_hit',
            'magneto_pow4_chaos', 'magneto_shield_hit']
-SKIN = (f'<actorskin filename="2501"/>\n<actoranimdb filename="{ANIMS}"/>\n'
-        '<model filename="hud/hud_head_2501"/>\n<model filename="ui/hud/characters/2501"/>\n'
-        '<texture filename="textures/ui/magneto_all"/>\n')
+def skin(n):
+    return (f'<actorskin filename="{n}"/>\n<actoranimdb filename="{ANIMS}"/>\n'
+            f'<model filename="hud/hud_head_{n}"/>\n<model filename="ui/hud/characters/{n}"/>\n'
+            '<texture filename="textures/ui/magneto_all"/>\n')
 CAPE = '<actoranimdb filename="99_cape"/>\n<actoranimdb filename="9901"/>\n'
 POWERS = (''.join(f'<effect filename="powers/{e}"/>\n' for e in EFFECTS) +
           '<actorskin filename="2504"/>\n<model filename="models/effects/magneto_blast"/>\n'
@@ -176,9 +189,15 @@ POWERS = (''.join(f'<effect filename="powers/{e}"/>\n' for e in EFFECTS) +
 
 w('merge/data/herostat.eng', hero())
 w('files/data/powerstyles/ps_magnetohero.xml', powerstyle())
-w('files/packages/generated/characters/magneto_2501.pkgb', '<packagedef>\n' + SKIN + POWERS +
-  '<fightstyle filename="data/powerstyles/ps_magnetohero"/>\n' + CAPE + '</packagedef>\n')
-w('files/packages/generated/characters/magneto_2501_nc.pkgb', '<packagedef>\n' + SKIN + CAPE + '</packagedef>\n')
+# One package pair per skin, as the game's own alternate skins have.
+for n in ['2501', '2502']:
+    w(f'files/packages/generated/characters/magneto_{n}.pkgb', '<packagedef>\n' + skin(n) + POWERS +
+      '<fightstyle filename="data/powerstyles/ps_magnetohero"/>\n' + CAPE + '</packagedef>\n')
+    w(f'files/packages/generated/characters/magneto_{n}_nc.pkgb', '<packagedef>\n' + skin(n) + CAPE + '</packagedef>\n')
+# His animated-series (TAS) costume, made for this mod: model and HUD panel.
+for asset, target in [('magneto-tas-2502.igb', 'actors/2502.igb'), ('magneto-tas-hud-2502.igb', 'ui/hud/characters/2502.igb')]:
+    (M / 'files' / target).parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(Path(__file__).parent / 'assets' / asset, M / 'files' / target)
 w('files/packages/generated/characters/magneto_xml.pkgb',
   '<packagedef>\n<xml filename="data/entities/magnetoboss_ents"/>\n<fightstyle filename="data/powerstyles/ps_magnetohero"/>\n</packagedef>\n')
 # His roster portrait, made for this mod (tools/assets/magneto-portrait-2501.igb).

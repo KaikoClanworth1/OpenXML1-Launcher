@@ -1,0 +1,9 @@
+<packagedef>
+<actorskin filename="2502"/>
+<actoranimdb filename="25_magnetohero"/>
+<model filename="hud/hud_head_2502"/>
+<model filename="ui/hud/characters/2502"/>
+<texture filename="textures/ui/magneto_all"/>
+<actoranimdb filename="99_cape"/>
+<actoranimdb filename="9901"/>
+</packagedef>
