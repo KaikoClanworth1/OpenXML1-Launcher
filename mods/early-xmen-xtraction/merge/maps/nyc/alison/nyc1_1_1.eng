@@ -9,4 +9,22 @@
 <inst name="player_start01" pos="1287.84 1535.34 9.6" extents="1259.32 1508.2 9.6 1313.22 1569.16 93.55" orient="0 0 -1.13446"/>
 <inst name="player_start01" pos="1312.33 1612.96 9.6" extents="1283.81 1585.82 9.6 1337.71 1646.78 93.55" orient="0 0 -1.13446"/>
 </entinst>
+<entinst type="null">
+<inst name="subway_downB" pos="660 144.759 -159.231" extents="654 138.759 -159.231 666 150.759 -147.231" orient="0 0 1.5708"/>
+<inst name="subway_downA" pos="660 954.085 -165.793" extents="654 948.085 -165.793 666 960.085 -153.793" orient="0 0 -1.5708"/>
+<inst name="subway_upA" pos="2280 2502.04 0" extents="2274 2496.04 0 2286 2508.04 12" orient="0 0 1.5708"/>
+<inst name="subway_upb" pos="2280 1046.86 0" extents="2274 1040.86 0 2286 1052.86 12" orient="0 0 -1.5708"/>
+<inst name="subway_downa_p2" pos="705 954.085 -165.793" extents="699 948.085 -165.793 711 960.085 -153.793" orient="0 0 -1.5708"/>
+<inst name="subway_downa_p3" pos="615 954.085 -165.793" extents="609 948.085 -165.793 621 960.085 -153.793" orient="0 0 -1.5708"/>
+<inst name="subway_downa_p4" pos="660 899.085 -165.793" extents="654 893.085 -165.793 666 905.085 -153.793" orient="0 0 -1.5708"/>
+<inst name="subway_downb_p2" pos="615 144.759 -159.231" extents="609 138.759 -159.231 621 150.759 -147.231" orient="0 0 1.5708"/>
+<inst name="subway_downb_p3" pos="705 144.759 -159.231" extents="699 138.759 -159.231 711 150.759 -147.231" orient="0 0 1.5708"/>
+<inst name="subway_downb_p4" pos="660 199.759 -159.231" extents="654 193.759 -159.231 666 205.759 -147.231" orient="0 0 1.5708"/>
+<inst name="subway_upa_p2" pos="2235 2502.04 0" extents="2229 2496.04 0 2241 2508.04 12" orient="0 0 1.5708"/>
+<inst name="subway_upa_p3" pos="2325 2502.04 0" extents="2319 2496.04 0 2331 2508.04 12" orient="0 0 1.5708"/>
+<inst name="subway_upa_p4" pos="2280 2557.04 0" extents="2274 2551.04 0 2286 2563.04 12" orient="0 0 1.5708"/>
+<inst name="subway_upb_p2" pos="2325 1046.86 0" extents="2319 1040.86 0 2331 1052.86 12" orient="0 0 -1.5708"/>
+<inst name="subway_upb_p3" pos="2235 1046.86 0" extents="2229 1040.86 0 2241 1052.86 12" orient="0 0 -1.5708"/>
+<inst name="subway_upb_p4" pos="2280 991.86 0" extents="2274 985.86 0 2286 997.86 12" orient="0 0 -1.5708"/>
+</entinst>
 </world>

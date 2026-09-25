@@ -22,6 +22,8 @@ Nothing is spawned by script.
 | `maps/nyc/alison/nyc1_1_1.eng` ... `nyc1_1_5.eng` (all six areas) | merge | each player start keeps the game's own position(s) and gains new ones beside them, facing the same way, up to four |
 | `maps/nyc/alison/nyc1_1_1.eng` | merge | the game's standard `xtraction_point` entity, 110 units in front of Wolverine's start |
 | `scripts/nyc/alison/nyc1_1_1.py` | append | `setInCampaign` for the six heroes, so they are unlocked |
+| `scripts/nyc/alison/subway*.py` (all eight subway entrances) | files | move every living hero through the subway, not only party slot 1 |
+| `maps/nyc/alison/nyc1_1_1.eng`, `nyc1_1_2.eng` | merge | three spots beside each subway exit for heroes 2 to 4 |
 
 ## Why each piece is needed
 
@@ -37,11 +39,20 @@ Each was found by testing on the real game:
 - **The Xtraction Point's own map reload** uses the start with an empty `prevzone`. The first area had
   none (its only start is for arriving from the second area), so the game fell back on that one.
 
+- **Subways.** Each subway entrance fades to black and moved only `_HERO1_`, the whole party when the
+  mission had one hero. Now it moves every living hero, the way the game's own party moves do
+  (`alive()` then `copyOriginAndAngles` per hero): hero 1 to the original exit, heroes 2 to 4 to spots
+  beside it and one step ahead. A merge replaces a placed-object group by its type, so the maps' whole
+  `null` group is carried with the new spots added. `tools/make-early-xmen-subways.py` writes the scripts
+  and spots from the game's own files.
+
 ## Tested in the game
 
 - **New game:** Wolverine, Cyclops, Storm and Jean Grey start together, with four HUD portraits.
 - **Swapping:** Wolverine swapped for Beast and Cyclops for Iceman, leaving neither on the team. Then a
   second team change while playing as Storm. No void, all four present, all four portraits.
+- **Subways:** all eight entrances on both subway maps, fired in turn. All four heroes arrived together
+  at each exit, including while controlling a hero other than party slot 1 and during a fight.
 - **All six areas:** each was loaded directly. All four heroes were placed on solid ground at every start.
 
 ## Known limits
