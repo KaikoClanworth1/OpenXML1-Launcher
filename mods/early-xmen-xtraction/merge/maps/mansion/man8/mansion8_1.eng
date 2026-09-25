@@ -1,0 +1,56 @@
+<world>
+<entinst type="player_start10">
+<inst name="player_start10" pos="1224 2520 0" extents="1202.43 2502.05 0 1252.95 2537.98 83.9544" orient="0 0 -3.14159"/>
+<inst name="player_start10" pos="1179 2475 0" extents="1161 2453 0 1197 2503 84" orient="0 0 -3.14159"/>
+<inst name="player_start10" pos="1134 2520 0" extents="1116 2498 0 1152 2548 84" orient="0 0 -3.14159"/>
+<inst name="player_start10" pos="1224 2475 0" extents="1206 2453 0 1242 2503 84" orient="0 0 -3.14159"/>
+</entinst>
+<entinst type="player_start08">
+<inst name="player_start08" pos="1980 1368 0" extents="1962.02 1346.43 0 1997.95 1396.95 83.9544" orient="0 0 -1.5708"/>
+<inst name="player_start08" pos="1935 1323 0" extents="1917 1301 0 1953 1351 84" orient="0 0 -1.5708"/>
+<inst name="player_start08" pos="2025 1323 0" extents="2007 1301 0 2043 1351 84" orient="0 0 -1.5708"/>
+<inst name="player_start08" pos="1980 1278 0" extents="1962 1256 0 1998 1306 84" orient="0 0 -1.5708"/>
+</entinst>
+<entinst type="player_start11">
+<inst name="player_start11" pos="2697.01 2449.01 0" extents="2664.64 2420.93 0 2724.63 2482.72 83.9544" orient="0 0 -0.872665"/>
+<inst name="player_start11" pos="2691.463 2385.613 0" extents="2673.463 2363.613 0 2709.463 2413.613 84" orient="0 0 -0.872665"/>
+<inst name="player_start11" pos="2754.861 2380.066 0" extents="2736.861 2358.066 0 2772.861 2408.066 84" orient="0 0 -0.872665"/>
+<inst name="player_start11" pos="2662.538 2420.085 0" extents="2644.538 2398.085 0 2680.538 2448.085 84" orient="0 0 -0.872665"/>
+</entinst>
+<entinst type="player_start09">
+<inst name="player_start09" pos="2004.26 1726.38 0" extents="1986.28 1704.81 0 2022.2 1755.33 83.9544" orient="0 0 -1.5708"/>
+<inst name="player_start09" pos="1959.26 1681.38 0" extents="1941.26 1659.38 0 1977.26 1709.38 84" orient="0 0 -1.5708"/>
+<inst name="player_start09" pos="2049.26 1681.38 0" extents="2031.26 1659.38 0 2067.26 1709.38 84" orient="0 0 -1.5708"/>
+<inst name="player_start09" pos="1959.26 1726.38 0" extents="1941.26 1704.38 0 1977.26 1754.38 84" orient="0 0 -1.5708"/>
+</entinst>
+<entinst type="player_start01">
+<inst name="player_start01" pos="1236 2520 0" extents="1214.43 2502.05 0 1264.95 2537.98 83.9544" orient="0 0 -3.14159"/>
+<inst name="player_start01" pos="1191 2475 0" extents="1173 2453 0 1209 2503 84" orient="0 0 -3.14159"/>
+<inst name="player_start01" pos="1146 2520 0" extents="1128 2498 0 1164 2548 84" orient="0 0 -3.14159"/>
+<inst name="player_start01" pos="1236 2475 0" extents="1218 2453 0 1254 2503 84" orient="0 0 -3.14159"/>
+</entinst>
+<entinst type="player_start03">
+<inst name="player_start03" pos="1980 2256 0" extents="1962.02 2234.43 0 1997.95 2284.95 83.9544" orient="0 0 -1.5708"/>
+<inst name="player_start03" pos="1935 2211 0" extents="1917 2189 0 1953 2239 84" orient="0 0 -1.5708"/>
+<inst name="player_start03" pos="2025 2211 0" extents="2007 2189 0 2043 2239 84" orient="0 0 -1.5708"/>
+<inst name="player_start03" pos="1980 2166 0" extents="1962 2144 0 1998 2194 84" orient="0 0 -1.5708"/>
+</entinst>
+<entinst type="player_start02">
+<inst name="player_start02" pos="1980 1188 3.84299" extents="1962.05 1159.05 3.84299 1997.98 1209.57 87.7974" orient="0 0 1.5708"/>
+<inst name="player_start02" pos="2025 1233 3.843" extents="2007 1211 3.843 2043 1261 87.843" orient="0 0 1.5708"/>
+<inst name="player_start02" pos="1935 1233 3.843" extents="1917 1211 3.843 1953 1261 87.843" orient="0 0 1.5708"/>
+<inst name="player_start02" pos="1980 1278 3.843" extents="1962 1256 3.843 1998 1306 87.843" orient="0 0 1.5708"/>
+</entinst>
+<entinst type="player_start12">
+<inst name="player_start12" pos="2688 2460 0" extents="2655.62 2431.92 0 2715.61 2493.71 83.9544" orient="0 0 -0.872665"/>
+<inst name="player_start12" pos="2682.453 2396.603 0" extents="2664.453 2374.603 0 2700.453 2424.603 84" orient="0 0 -0.872665"/>
+<inst name="player_start12" pos="2751.397 2454.453 0" extents="2733.397 2432.453 0 2769.397 2482.453 84" orient="0 0 -0.872665"/>
+<inst name="player_start12" pos="2745.851 2391.056 0" extents="2727.851 2369.056 0 2763.851 2419.056 84" orient="0 0 -0.872665"/>
+</entinst>
+<entinst type="player_start07">
+<inst name="player_start07" pos="1960.83 1726.09 0" extents="1942.86 1704.52 0 1978.78 1755.04 83.9544" orient="0 0 -1.5708"/>
+<inst name="player_start07" pos="1915.83 1681.09 0" extents="1897.83 1659.09 0 1933.83 1709.09 84" orient="0 0 -1.5708"/>
+<inst name="player_start07" pos="2005.83 1681.09 0" extents="1987.83 1659.09 0 2023.83 1709.09 84" orient="0 0 -1.5708"/>
+<inst name="player_start07" pos="1915.83 1726.09 0" extents="1897.83 1704.09 0 1933.83 1754.09 84" orient="0 0 -1.5708"/>
+</entinst>
+</world>

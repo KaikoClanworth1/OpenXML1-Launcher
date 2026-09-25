@@ -1,0 +1,51 @@
+<world>
+<entinst type="player_start05">
+<inst name="player_start05" pos="532.24 1193.89 0" extents="503.292 1175.91 0 553.811 1211.84 83.9544"/>
+<inst name="player_start05" pos="577.24 1148.89 0" extents="559.24 1126.89 0 595.24 1176.89 84"/>
+<inst name="player_start05" pos="577.24 1238.89 0" extents="559.24 1216.89 0 595.24 1266.89 84"/>
+<inst name="player_start05" pos="622.24 1193.89 0" extents="604.24 1171.89 0 640.24 1221.89 84"/>
+</entinst>
+<entinst type="player_start03">
+<inst name="player_start03" pos="789.54 1825.88 22.2463" extents="757.185 1792.15 22.2463 817.175 1853.94 106.201" orient="0 0 0.872665"/>
+<inst name="player_start03" pos="852.937 1831.427 22.246" extents="834.937 1809.427 22.246 870.937 1859.427 106.246" orient="0 0 0.872665"/>
+<inst name="player_start03" pos="783.993 1889.277 22.246" extents="765.993 1867.277 22.246 801.993 1917.277 106.246" orient="0 0 0.872665"/>
+<inst name="player_start03" pos="847.391 1894.824 22.246" extents="829.391 1872.824 22.246 865.391 1922.824 106.246" orient="0 0 0.872665"/>
+</entinst>
+<entinst type="player_start01">
+<inst name="player_start01" pos="1632 912 0" extents="1604.04 884.058 0 1665.16 945.18 83.9544" orient="0 0 -2.35619"/>
+<inst name="player_start01" pos="1568.36 912 0" extents="1550.36 890 0 1586.36 940 84" orient="0 0 -2.35619"/>
+<inst name="player_start01" pos="1632 848.36 0" extents="1614 826.36 0 1650 876.36 84" orient="0 0 -2.35619"/>
+<inst name="player_start01" pos="1568.361 848.36 0" extents="1550.361 826.36 0 1586.361 876.36 84" orient="0 0 -2.35619"/>
+</entinst>
+<entinst type="player_start02">
+<inst name="player_start02" pos="1368 912 0" extents="1334.27 884.365 0 1396.06 944.355 83.9544" orient="0 0 -0.698132"/>
+<inst name="player_start02" pos="1373.547 848.603 0" extents="1355.547 826.603 0 1391.547 876.603 84" orient="0 0 -0.698132"/>
+<inst name="player_start02" pos="1431.397 917.547 0" extents="1413.397 895.547 0 1449.397 945.547 84" orient="0 0 -0.698132"/>
+<inst name="player_start02" pos="1436.944 854.149 0" extents="1418.944 832.149 0 1454.944 882.149 84" orient="0 0 -0.698132"/>
+</entinst>
+<entinst type="player_start04">
+<inst name="player_start04" pos="1380 900 0" extents="1346.82 872.037 0 1407.94 933.159 83.9544" orient="0 0 -0.785398"/>
+<inst name="player_start04" pos="1380 836.36 0" extents="1362 814.36 0 1398 864.36 84" orient="0 0 -0.785398"/>
+<inst name="player_start04" pos="1443.64 900 0" extents="1425.64 878 0 1461.64 928 84" orient="0 0 -0.785398"/>
+<inst name="player_start04" pos="1443.64 836.36 0" extents="1425.64 814.36 0 1461.64 864.36 84" orient="0 0 -0.785398"/>
+</entinst>
+<entinst type="player_start06">
+<inst name="player_start06" pos="1620 900 0" extents="1592.04 872.058 0 1653.16 933.18 83.9544" orient="0 0 -2.35619"/>
+<inst name="player_start06" pos="1556.36 900 0" extents="1538.36 878 0 1574.36 928 84" orient="0 0 -2.35619"/>
+<inst name="player_start06" pos="1620 836.36 0" extents="1602 814.36 0 1638 864.36 84" orient="0 0 -2.35619"/>
+<inst name="player_start06" pos="1556.361 836.36 0" extents="1538.361 814.36 0 1574.361 864.36 84" orient="0 0 -2.35619"/>
+</entinst>
+<entinst type="player_start11">
+<inst name="player_start11" pos="1495.28 738.229 2" extents="1477.34 709.28 2 1513.26 759.799 85.9544" orient="0 0 1.5708"/>
+<inst name="player_start11" pos="1540.28 783.229 2" extents="1522.28 761.229 2 1558.28 811.229 86" orient="0 0 1.5708"/>
+<inst name="player_start11" pos="1450.28 783.229 2" extents="1432.28 761.229 2 1468.28 811.229 86" orient="0 0 1.5708"/>
+<inst name="player_start11" pos="1495.28 828.229 2" extents="1477.28 806.229 2 1513.28 856.229 86" orient="0 0 1.5708"/>
+</entinst>
+<entinst type="player_start08">
+<inst name="player_start08" pos="1495.28 762.229 2" extents="1477.34 733.28 2 1513.26 783.799 85.9544" orient="0 0 1.5708"/>
+<inst name="player_start08" pos="1540.28 807.229 2" extents="1522.28 785.229 2 1558.28 835.229 86" orient="0 0 1.5708"/>
+<inst name="player_start08" pos="1450.28 807.229 2" extents="1432.28 785.229 2 1468.28 835.229 86" orient="0 0 1.5708"/>
+<inst name="player_start08" pos="1495.28 852.229 2" extents="1477.28 830.229 2 1513.28 880.229 86" orient="0 0 1.5708"/>
+</entinst>
+<entity name="xtraction_point_mansion" model="puzzles/beacon_xtraction" actscript="extractionPointLite('_OWNER_','true','true','true','true','false')" mod-attributes="true"/>
+</world>
